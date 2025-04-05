@@ -1,0 +1,49 @@
+# .editorconfig for C# naming conventions
+
+root = true
+
+[*.cs]
+
+##############################
+# Code Style: Naming Rules
+##############################
+
+# Use underscore prefix for private fields
+dotnet_naming_rule.private_fields_with_underscore.severity = suggestion
+dotnet_naming_rule.private_fields_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_with_underscore.style = underscore_prefix
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_fields.required_modifiers = readonly
+
+dotnet_naming_style.underscore_prefix.required_prefix = _
+dotnet_naming_style.underscore_prefix.capitalization = camel_case
+
+# Use PascalCase for public members
+dotnet_naming_rule.public_members_pascal.severity = suggestion
+dotnet_naming_rule.public_members_pascal.symbols = public_members
+dotnet_naming_rule.public_members_pascal.style = pascal_case
+
+dotnet_naming_symbols.public_members.applicable_accessibilities = public
+dotnet_naming_symbols.public_members.applicable_kinds = property, method, field
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+# Use camelCase for locals and parameters
+dotnet_naming_rule.locals_and_params_camel.severity = suggestion
+dotnet_naming_rule.locals_and_params_camel.symbols = locals_and_params
+dotnet_naming_rule.locals_and_params_camel.style = camel_case
+
+dotnet_naming_symbols.locals_and_params.applicable_kinds = local, parameter
+
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+##############################
+# Code Formatting Preferences
+##############################
+
+csharp_prefer_braces = true:suggestion
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_new_line_before_open_brace = all:suggestion
