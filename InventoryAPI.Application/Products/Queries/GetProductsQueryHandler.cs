@@ -1,4 +1,5 @@
 ﻿using InventoryAPI.Application.Common;
+using InventoryAPI.Application.Products.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Application.Products.Queries {
@@ -15,11 +16,14 @@ namespace InventoryAPI.Application.Products.Queries {
             var products = await this._dbContext.Products.ToListAsync();
             return products.Select(product => ProductMapper.MapFromProduct(product));
         }
-    }
 
-    public interface IGetProducts 
-    {
-        Task<IEnumerable<ProductDto>> Handle();
-    }
+        public async Task<ProductDto> Handle(int productId) {
+            var product = await this._dbContext.Products.FindAsync(productId);
+            if (product == null) {
+                return null;
+            }
 
+            return ProductMapper.MapFromProduct(product);
+        }
+    }
 }

@@ -10,14 +10,12 @@ namespace InventoryApi.Controllers {
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IGetProduct _getProduct;
         private readonly IGetProducts _getProducts;
         private readonly ICreateProduct _createProduct;
 
-        public ProductsController(IGetProducts getProducts, IGetProduct getProduct, ICreateProduct createProduct)
+        public ProductsController(IGetProducts getProducts, ICreateProduct createProduct)
         {
             this._getProducts = getProducts;
-            this._getProduct = getProduct;
             this._createProduct = createProduct;
         }
 
@@ -33,7 +31,7 @@ namespace InventoryApi.Controllers {
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDto>> Get(int id)
         {
-            var product = await this._getProduct.Handle(id);
+            var product = await this._getProducts.Handle(id);
             if (product == null) {
                 return BadRequest("Product not found");
             }

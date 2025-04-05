@@ -1,4 +1,4 @@
-﻿namespace InventoryAPI.Application.Products {
+﻿namespace InventoryAPI.Application.Products.Common {
     public static class ProductMapper {
         public static ProductDto MapFromProduct(Domain.Entities.Product product) {
             return new ProductDto(

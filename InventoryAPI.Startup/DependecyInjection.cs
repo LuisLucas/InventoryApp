@@ -10,7 +10,6 @@ namespace InventoryAPI.Startup {
     public static class DependecyInjection
     {
         public static void AddApplication(IServiceCollection services) {
-            services.AddTransient<IGetProduct, GetProductQueryHandler>();
             services.AddTransient<IGetProducts, GetProductsQueryHandler>();
             services.AddTransient<ICreateProduct, CreateProductCommandHandler>();
 
