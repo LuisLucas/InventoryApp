@@ -5,5 +5,7 @@ namespace InventoryAPI.Application.Common {
     public interface IDbContext
     {
         DbSet<Product> Products { get; }
+
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

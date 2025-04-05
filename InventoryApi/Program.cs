@@ -1,8 +1,10 @@
 
 using InventoryApi.Infrastructure.Data;
 using InventoryAPI.Application.Common;
+using InventoryAPI.Application.Products.Command;
 using InventoryAPI.Application.Products.Queries;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace InventoryApi
 {
@@ -26,11 +28,12 @@ namespace InventoryApi
                 ?? throw new InvalidOperationException("Connection string" + "'DefaultConnection' not found.");
             builder.Services.AddDbContext<InventoryContext>(options =>
                                                                     options.UseSqlServer(connectionString));
-
+            
             // Register IApplicationDbContext interface with ApplicationDbContext implementation
             builder.Services.AddScoped<IDbContext>(provider => provider.GetService<InventoryContext>());
 
             builder.Services.AddTransient<IGetProduct, GetProduct>();
+            builder.Services.AddTransient<ICreateProduct, CreateProduct>();
 
             var app = builder.Build();
 

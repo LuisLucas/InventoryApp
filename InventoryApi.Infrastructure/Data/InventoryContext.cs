@@ -19,6 +19,10 @@ public partial class InventoryContext : DbContext, IDbContext
 
     public virtual DbSet<Stock> Stocks { get; set; }
 
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Product>(entity =>

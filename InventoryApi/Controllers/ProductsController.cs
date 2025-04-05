@@ -1,20 +1,22 @@
 ﻿using InventoryAPI.Application.Products;
+using InventoryAPI.Application.Products.Command;
 using InventoryAPI.Application.Products.Queries;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace InventoryApi.Controllers
-{
+namespace InventoryApi.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     public class ProductsController : ControllerBase
     {
         private readonly IGetProduct _getProduct;
+        private readonly ICreateProduct _createProduct;
 
-        public ProductsController(IGetProduct getProduct)
+        public ProductsController(IGetProduct getProduct, ICreateProduct createProduct)
         {
             this._getProduct = getProduct;
+            this._createProduct = createProduct;
         }
 
         // GET: api/<ProductsController>
@@ -39,8 +41,20 @@ namespace InventoryApi.Controllers
 
         // POST api/<ProductsController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromBody] ProductDto productDto)
         {
+            if (productDto == null) {
+                return BadRequest("Product data is required.");
+            }
+            var command = new CreateProductCommand() {
+                Name = productDto.Name,
+                Description = productDto.Description,
+                Sku = productDto.Sku,
+                Price = productDto.Price
+            };
+            var productId = await this._createProduct.Handle(command);
+
+            return Ok(productId);
         }
 
         // PUT api/<ProductsController>/5

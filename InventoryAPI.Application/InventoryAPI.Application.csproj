@@ -15,4 +15,8 @@
     <ProjectReference Include="..\InventoryAPI.Domain\InventoryAPI.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Products\Common\" />
+  </ItemGroup>
+
 </Project>
