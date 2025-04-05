@@ -48,6 +48,7 @@ namespace InventoryApi.Controllers {
             if (productDto == null) {
                 return BadRequest("Product data is required.");
             }
+
             var command = new CreateProductCommand() {
                 Name = productDto.Name,
                 Description = productDto.Description,
@@ -61,8 +62,24 @@ namespace InventoryApi.Controllers {
 
         // PUT api/<ProductsController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> Put(int id, [FromBody] ProductDto productDto)
         {
+            if (id == 0) {
+                return BadRequest("Product id is required.");
+            }
+
+            if (productDto == null) {
+                return BadRequest("Product data is required.");
+            }
+
+            /*var command = new UpdateProductCommand() {
+                Name = productDto.Name,
+                Description = productDto.Description,
+                Sku = productDto.Sku,
+                Price = productDto.Price
+            };*/
+
+            return Ok();
         }
 
         // DELETE api/<ProductsController>/5

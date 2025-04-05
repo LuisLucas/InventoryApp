@@ -3,6 +3,7 @@ using InventoryApi.Infrastructure.Data;
 using InventoryAPI.Application.Common;
 using InventoryAPI.Application.Products.Command;
 using InventoryAPI.Application.Products.Queries;
+using InventoryAPI.Startup;
 using Microsoft.EntityFrameworkCore;
 
 namespace InventoryApi {
@@ -22,17 +23,8 @@ namespace InventoryApi {
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                ?? throw new InvalidOperationException("Connection string" + "'DefaultConnection' not found.");
-            builder.Services.AddDbContext<InventoryContext>(options =>
-                                                                    options.UseSqlServer(connectionString));
-            
-            // Register IApplicationDbContext interface with ApplicationDbContext implementation
-            builder.Services.AddScoped<IDbContext>(provider => provider.GetService<InventoryContext>());
-
-            builder.Services.AddTransient<IGetProduct, GetProductQueryHandler>();
-            builder.Services.AddTransient<IGetProducts, GetProductsQueryHandler>();
-            builder.Services.AddTransient<ICreateProduct, CreateProductCommandHandler>();
+            DependecyInjection.AddInfrastructure(builder.Services, builder.Configuration);
+            DependecyInjection.AddApplication(builder.Services);
 
             var app = builder.Build();
 
