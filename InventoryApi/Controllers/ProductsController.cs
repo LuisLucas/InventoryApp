@@ -22,15 +22,19 @@ namespace InventoryApi.Controllers
         public async Task<ActionResult<IEnumerable<ProductDto>>> Get()
         {
             var products = await this._getProduct.GetProducts();
-
             return Ok(products);
         }
 
         // GET api/<ProductsController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<ActionResult<ProductDto>> Get(int id)
         {
-            return "value";
+            var product = await this._getProduct.GetProduct(id);
+            if (product == null) {
+                return BadRequest("Product not found");
+            }
+
+            return Ok(product);
         }
 
         // POST api/<ProductsController>
