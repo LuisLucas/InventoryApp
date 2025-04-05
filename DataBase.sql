@@ -2,14 +2,14 @@ CREATE DATABASE InventoryAPI
 
 CREATE TABLE Product (
 	ID INT IDENTITY PRIMARY KEY,
-	Name NVARCHAR,
-	Description NVARCHAR,
-	SKU NVARCHAR,
+	Name NVARCHAR(50),
+	Description NVARCHAR(100),
+	SKU NVARCHAR(100),
 	Price DECIMAL(18,2),
 	CreatedAt DATETIME,
-	CreatedBy NVARCHAR,
+	CreatedBy NVARCHAR(50),
 	LastUpdatedAt DATETIME,
-	LastUpdatedBy NVARCHAR
+	LastUpdatedBy NVARCHAR(50)
 )
 
 CREATE TABLE Stock (
@@ -17,7 +17,7 @@ CREATE TABLE Stock (
 	Product_Id INT FOREIGN KEY REFERENCES PRODUCT(ID),
 	Quantity INT,
 	CreatedAt DATETIME,
-	CreatedBy NVARCHAR,
+	CreatedBy NVARCHAR(50),
 	LastUpdatedAt DATETIME,
-	LastUpdatedBy NVARCHAR
+	LastUpdatedBy NVARCHAR(50)
 )
