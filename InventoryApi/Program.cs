@@ -4,10 +4,8 @@ using InventoryAPI.Application.Common;
 using InventoryAPI.Application.Products.Command;
 using InventoryAPI.Application.Products.Queries;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.CompilerServices;
 
-namespace InventoryApi
-{
+namespace InventoryApi {
     public class Program
     {
         public static void Main(string[] args)
@@ -34,7 +32,7 @@ namespace InventoryApi
 
             builder.Services.AddTransient<IGetProduct, GetProductQueryHandler>();
             builder.Services.AddTransient<IGetProducts, GetProductsQueryHandler>();
-            builder.Services.AddTransient<ICreateProduct, CreateProduct>();
+            builder.Services.AddTransient<ICreateProduct, CreateProductCommandHandler>();
 
             var app = builder.Build();
 
