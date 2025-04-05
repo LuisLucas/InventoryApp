@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace InventoryAPI.Application.Products.Command {
-    public interface ICreateProduct {
+    public interface ICreateProduct 
+    {
         Task<int> Handle(CreateProductCommand request);
     }
 }

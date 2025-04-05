@@ -32,7 +32,8 @@ namespace InventoryApi
             // Register IApplicationDbContext interface with ApplicationDbContext implementation
             builder.Services.AddScoped<IDbContext>(provider => provider.GetService<InventoryContext>());
 
-            builder.Services.AddTransient<IGetProduct, GetProduct>();
+            builder.Services.AddTransient<IGetProduct, GetProductQueryHandler>();
+            builder.Services.AddTransient<IGetProducts, GetProductsQueryHandler>();
             builder.Services.AddTransient<ICreateProduct, CreateProduct>();
 
             var app = builder.Build();
