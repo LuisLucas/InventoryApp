@@ -1,5 +1,6 @@
 ﻿using InventoryAPI.Application.Products;
-using InventoryAPI.Application.Products.Command;
+using InventoryAPI.Application.Products.Command.Create;
+using InventoryAPI.Application.Products.Command.Update;
 using InventoryAPI.Application.Products.Queries;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +13,16 @@ namespace InventoryApi.Controllers {
     {
         private readonly IGetProducts _getProducts;
         private readonly ICreateProduct _createProduct;
+        private readonly IUpdateProduct _updateProduct;
 
-        public ProductsController(IGetProducts getProducts, ICreateProduct createProduct)
+        public ProductsController(
+            IGetProducts getProducts, 
+            ICreateProduct createProduct,
+            IUpdateProduct updateProduct)
         {
             this._getProducts = getProducts;
             this._createProduct = createProduct;
+            this._updateProduct = updateProduct;
         }
 
         // GET: api/<ProductsController>
@@ -70,12 +76,14 @@ namespace InventoryApi.Controllers {
                 return BadRequest("Product data is required.");
             }
 
-            /*var command = new UpdateProductCommand() {
+            var command = new UpdateProductCommand() {
+                Id = id,
                 Name = productDto.Name,
                 Description = productDto.Description,
                 Sku = productDto.Sku,
                 Price = productDto.Price
-            };*/
+            };
+            var updatedProduct = await this._updateProduct.Handle(command);
 
             return Ok();
         }

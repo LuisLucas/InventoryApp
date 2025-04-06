@@ -1,17 +1,19 @@
 ﻿using InventoryAPI.Application.Common;
+using InventoryAPI.Application.Products.Common;
 using InventoryAPI.Domain.Entities;
+using InventoryAPI.Domain.Products;
 
-namespace InventoryAPI.Application.Products.Command {
+namespace InventoryAPI.Application.Products.Command.Create {
     public class CreateProductCommandHandler : ICreateProduct 
     {
         private readonly IDbContext _dbContext;
 
         public CreateProductCommandHandler(IDbContext context) {
-            this._dbContext = context;
+            _dbContext = context;
         }
 
-        public async Task<int> Handle(CreateProductCommand request) {
-            var product = new Product {
+        public async Task<ProductDto> Handle(CreateProductCommand request) {
+            var product = new Domain.Entities.Product {
                 Name = request.Name,
                 Description = request.Description,
                 Sku = request.Sku,
@@ -23,13 +25,13 @@ namespace InventoryAPI.Application.Products.Command {
             };
 
             // Save the product using the repository
-            await this._dbContext.Products.AddAsync(product);
+            await _dbContext.Products.AddAsync(product);
 
             var cancelationToken = new CancellationToken();
-            var productId = await this._dbContext.SaveChangesAsync(cancelationToken);
+            await _dbContext.SaveChangesAsync(cancelationToken);
 
-            // Return the product ID
-            return product.Id;
+            // Return the product
+            return ProductMapper.MapFromProduct(product);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using InventoryApi.Infrastructure.Data;
 using InventoryAPI.Application.Common;
-using InventoryAPI.Application.Products.Command;
+using InventoryAPI.Application.Products.Command.Create;
+using InventoryAPI.Application.Products.Command.Update;
 using InventoryAPI.Application.Products.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ namespace InventoryAPI.Startup {
         public static void AddApplication(IServiceCollection services) {
             services.AddTransient<IGetProducts, GetProductsQueryHandler>();
             services.AddTransient<ICreateProduct, CreateProductCommandHandler>();
+            services.AddTransient<IUpdateProduct, UpdateProductCommandHandler>();
 
         }
 
