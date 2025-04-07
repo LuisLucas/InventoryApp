@@ -59,9 +59,8 @@ namespace InventoryApi.Controllers {
                 Sku = productDto.Sku,
                 Price = productDto.Price
             };
-            var productId = await this._createProduct.Handle(command);
-
-            return Ok(productId);
+            var product = await this._createProduct.Handle(command);
+            return Ok(product);
         }
 
         // PUT api/<ProductsController>/5
@@ -84,8 +83,7 @@ namespace InventoryApi.Controllers {
                 Price = productDto.Price
             };
             var updatedProduct = await this._updateProduct.Handle(command);
-
-            return Ok();
+            return Ok(updatedProduct);
         }
 
         // DELETE api/<ProductsController>/5
