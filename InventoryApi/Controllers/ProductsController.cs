@@ -1,5 +1,6 @@
 ﻿using InventoryAPI.Application.Products;
 using InventoryAPI.Application.Products.Command.Create;
+using InventoryAPI.Application.Products.Command.Delete;
 using InventoryAPI.Application.Products.Command.Update;
 using InventoryAPI.Application.Products.Queries;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +15,18 @@ namespace InventoryApi.Controllers {
         private readonly IGetProducts _getProducts;
         private readonly ICreateProduct _createProduct;
         private readonly IUpdateProduct _updateProduct;
+        private readonly IDeleteProduct _deleteProduct;
 
         public ProductsController(
             IGetProducts getProducts, 
             ICreateProduct createProduct,
-            IUpdateProduct updateProduct)
+            IUpdateProduct updateProduct,
+            IDeleteProduct deleteProduct)
         {
             this._getProducts = getProducts;
             this._createProduct = createProduct;
             this._updateProduct = updateProduct;
+            this._deleteProduct = deleteProduct;
         }
 
         // GET: api/<ProductsController>
@@ -88,8 +92,17 @@ namespace InventoryApi.Controllers {
 
         // DELETE api/<ProductsController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            if (id == 0) {
+                return BadRequest("Product id is required.");
+            }
+
+            var command = new DeleteProductCommand() {
+                Id = id
+            };
+            var updatedProduct = await this._deleteProduct.Handle(command);
+            return Ok("Success");
         }
     }
 }

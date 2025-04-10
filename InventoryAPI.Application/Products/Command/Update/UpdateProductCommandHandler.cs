@@ -10,6 +10,7 @@ namespace InventoryAPI.Application.Products.Command.Update
         {
             _dbContext = dbContext;
         }
+
         public async Task<ProductDto> Handle(UpdateProductCommand request) {
 
             var productEntity = await _dbContext.Products.FindAsync(request.Id);
