@@ -41,6 +41,9 @@ namespace InventoryApi.Controllers {
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDto>> Get(int id)
         {
+            if(id == 0) {
+                return BadRequest("Id cannot be zero.");
+            }
             var product = await this._getProducts.Handle(id);
             if (product == null) {
                 return BadRequest("Product not found");
