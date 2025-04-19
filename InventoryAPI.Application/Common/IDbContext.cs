@@ -6,6 +6,8 @@ namespace InventoryAPI.Application.Common {
     {
         DbSet<Product> Products { get; }
 
+        DbSet<Stock> Stocks { get; }
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }
