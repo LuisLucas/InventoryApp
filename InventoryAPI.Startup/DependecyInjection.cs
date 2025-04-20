@@ -4,6 +4,7 @@ using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
 using InventoryAPI.Application.Products.Command.Update;
 using InventoryAPI.Application.Products.Queries;
+using InventoryAPI.Application.Stocks.Command;
 using InventoryAPI.Application.Stocks.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,7 @@ namespace InventoryAPI.Startup {
             services.AddTransient<IUpdateProduct, UpdateProductCommandHandler>();
             services.AddTransient<IDeleteProduct, DeleteProductCommandHandler>();
             services.AddTransient<IGetStock, GetStockQueryHandler>();
+            services.AddTransient<IUpdateStock, UpdateStockCommandHandler>();
         }
 
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config) 

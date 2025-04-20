@@ -1,5 +1,5 @@
 ﻿using InventoryAPI.Application.Common;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace InventoryAPI.Application.Stocks.Queries {
     public class GetStockQueryHandler(IDbContext context) : IGetStock {

@@ -3,17 +3,11 @@ using InventoryAPI.Application.Products.Common;
 
 namespace InventoryAPI.Application.Products.Command.Update
 {
-    public class UpdateProductCommandHandler : IUpdateProduct {
-
-        private IDbContext _dbContext;
-        public UpdateProductCommandHandler(IDbContext dbContext) 
-        {
-            _dbContext = dbContext;
-        }
+    public class UpdateProductCommandHandler(IDbContext dbContext) : IUpdateProduct {
 
         public async Task<ProductDto> Handle(UpdateProductCommand request) {
 
-            var productEntity = await _dbContext.Products.FindAsync(request.Id);
+            var productEntity = await dbContext.Products.FindAsync(request.Id);
             if (productEntity == null) {
                 return null; // return exception
             }
@@ -26,7 +20,7 @@ namespace InventoryAPI.Application.Products.Command.Update
             productEntity.LastUpdatedAt = DateTime.UtcNow;
 
             var cancelationToken = new CancellationToken();
-            await _dbContext.SaveChangesAsync(cancelationToken);
+            await dbContext.SaveChangesAsync(cancelationToken);
 
             // Return the product
             return ProductMapper.MapFromProduct(productEntity);

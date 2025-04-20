@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace InventoryAPI.Domain.Entities;
+﻿namespace InventoryAPI.Domain.Entities;
 
 public partial class Product
 {
     public int Id { get; set; }
 
-    public string? Name { get; set; }
+    public required string Name { get; set; }
 
     public string? Description { get; set; }
 

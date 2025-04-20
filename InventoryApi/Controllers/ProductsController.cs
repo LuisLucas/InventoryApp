@@ -10,30 +10,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace InventoryApi.Controllers {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController : ControllerBase
+    public class ProductsController(IGetProducts getProducts, ICreateProduct createProduct, IUpdateProduct updateProduct, IDeleteProduct deleteProduct) : ControllerBase
     {
-        private readonly IGetProducts _getProducts;
-        private readonly ICreateProduct _createProduct;
-        private readonly IUpdateProduct _updateProduct;
-        private readonly IDeleteProduct _deleteProduct;
-
-        public ProductsController(
-            IGetProducts getProducts, 
-            ICreateProduct createProduct,
-            IUpdateProduct updateProduct,
-            IDeleteProduct deleteProduct)
-        {
-            this._getProducts = getProducts;
-            this._createProduct = createProduct;
-            this._updateProduct = updateProduct;
-            this._deleteProduct = deleteProduct;
-        }
-
         // GET: api/<ProductsController>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductDto>>> Get()
         {
-            var products = await this._getProducts.Handle();
+            var products = await getProducts.Handle();
             return Ok(products);
         }
 
@@ -44,7 +27,7 @@ namespace InventoryApi.Controllers {
             if(id == 0) {
                 return BadRequest("Id cannot be zero.");
             }
-            var product = await this._getProducts.Handle(id);
+            var product = await getProducts.Handle(id);
             if (product == null) {
                 return BadRequest("Product not found");
             }
@@ -61,7 +44,7 @@ namespace InventoryApi.Controllers {
             }
 
             var command = new CreateProductCommand(productDto.Name, productDto.Description, productDto.Sku, productDto.Price);
-            var product = await this._createProduct.Handle(command);
+            var product = await createProduct.Handle(command);
             return Ok(product);
         }
 
@@ -77,14 +60,8 @@ namespace InventoryApi.Controllers {
                 return BadRequest("Product data is required.");
             }
 
-            var command = new UpdateProductCommand() {
-                Id = id,
-                Name = productDto.Name,
-                Description = productDto.Description,
-                Sku = productDto.Sku,
-                Price = productDto.Price
-            };
-            var updatedProduct = await this._updateProduct.Handle(command);
+            var command = new UpdateProductCommand(id, productDto.Name, productDto.Description, productDto.Sku, productDto.Price);
+            var updatedProduct = await updateProduct.Handle(command);
             return Ok(updatedProduct);
         }
 
@@ -97,7 +74,7 @@ namespace InventoryApi.Controllers {
             }
 
             var command = new DeleteProductCommand(id);
-            var isProductDeleted = await this._deleteProduct.Handle(command);
+            var isProductDeleted = await deleteProduct.Handle(command);
             return Ok(isProductDeleted ? "Success" : "Failure");
         }
     }

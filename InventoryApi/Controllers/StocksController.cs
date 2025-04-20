@@ -8,22 +8,22 @@ using InventoryAPI.Application.Stocks;
 using InventoryAPI.Application.Stocks.Command;
 
 namespace InventoryApi.Controllers {
-    public class StocksController(IGetStock getStock, ICreateStock createProductStock) : ControllerBase 
+    public class StocksController(IGetStock getStock, IUpdateStock createProductStock) : ControllerBase 
     {
-        [HttpGet]
+        [HttpGet("product/{productId}/stock")]
         public async Task<ActionResult> Get(int productId) 
         {
             var productStock = await getStock.Handle(productId);
             return Ok(productStock);
         } 
 
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ProductStockDto productStockDto) {
-            if (productStockDto == null) {
+        [HttpPost("product/{productId}/stock/{stock}")]
+        public async Task<IActionResult> Post(int productId, int stock) {
+            if (productId <=0) {
                 return BadRequest("Stock data is required.");
             }
 
-            var command = new CreateStockCommand(productStockDto.productId, productStockDto.stock);
+            var command = new UpdateStockCommand(productId, stock);
             var product = await createProductStock.Handle(command);
             return Ok(product);
         }
