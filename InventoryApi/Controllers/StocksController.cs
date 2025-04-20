@@ -1,11 +1,6 @@
-﻿using InventoryAPI.Application.Products.Command.Create;
-using InventoryAPI.Application.Products.Command.Delete;
-using InventoryAPI.Application.Products.Command.Update;
-using InventoryAPI.Application.Products;
+﻿using InventoryAPI.Application.Stocks.Command;
 using InventoryAPI.Application.Stocks.Queries;
 using Microsoft.AspNetCore.Mvc;
-using InventoryAPI.Application.Stocks;
-using InventoryAPI.Application.Stocks.Command;
 
 namespace InventoryApi.Controllers {
     public class StocksController(IGetStock getStock, IUpdateStock createProductStock) : ControllerBase 
@@ -18,7 +13,8 @@ namespace InventoryApi.Controllers {
         } 
 
         [HttpPost("product/{productId}/stock/{stock}")]
-        public async Task<IActionResult> Post(int productId, int stock) {
+        public async Task<IActionResult> Post(int productId, int stock) 
+        {
             if (productId <=0) {
                 return BadRequest("Stock data is required.");
             }

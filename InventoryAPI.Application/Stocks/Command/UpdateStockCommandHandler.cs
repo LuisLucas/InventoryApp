@@ -1,5 +1,4 @@
-﻿
-using InventoryAPI.Application.Common;
+﻿using InventoryAPI.Application.Common;
 using InventoryAPI.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,22 +17,11 @@ namespace InventoryAPI.Application.Stocks.Command {
 
             var stock = await context.Stocks.SingleOrDefaultAsync(x => x.ProductId == productId);
             if (stock == null) {
-                if (command.ChangeInStock > 0) {
-                    stock = new Stock() {
-                        ProductId = productId,
-                        Quantity = command.ChangeInStock,
-                        CreatedAt = DateTime.UtcNow,
-                        CreatedBy = "Admin",
-                        LastUpdatedAt = DateTime.UtcNow,
-                        LastUpdatedBy = "Admin"
-                    };
-                    context.Stocks.Add(stock);
-                    await context.SaveChangesAsync(new CancellationToken());
-                    return new ProductStockDto(stock.Quantity.Value, productId);
-                }
-                else {
+                if (command.ChangeInStock <= 0) {
                     return default;
                 }
+
+                return await CreateAndReturnProductStock(command, productId);
             }
 
             var newStock = stock.Quantity - command.ChangeInStock;
@@ -42,6 +30,20 @@ namespace InventoryAPI.Application.Stocks.Command {
             }
 
             stock.Quantity = newStock;
+            await context.SaveChangesAsync(new CancellationToken());
+            return new ProductStockDto(stock.Quantity.Value, productId);
+        }
+
+        private async Task<ProductStockDto?> CreateAndReturnProductStock(UpdateStockCommand command, int productId) {
+            var stock = new Stock() {
+                ProductId = productId,
+                Quantity = command.ChangeInStock,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "Admin",
+                LastUpdatedAt = DateTime.UtcNow,
+                LastUpdatedBy = "Admin"
+            };
+            context.Stocks.Add(stock);
             await context.SaveChangesAsync(new CancellationToken());
             return new ProductStockDto(stock.Quantity.Value, productId);
         }
