@@ -20,40 +20,18 @@ public class UpdateStockCommandHandler(IDbContext context) : IUpdateStock
             return default;
         }
 
+        var productBusinessEntity = new Domain.Models.Product(product);
         Stock? stock = await context.Stocks.SingleOrDefaultAsync(x => x.ProductId == productId);
         if (stock == null)
         {
-            if (command.ChangeInStock <= 0)
-            {
-                return default;
-            }
-
-            return await CreateAndReturnProductStock(command, productId);
+            stock = productBusinessEntity.CreateStock(command.ChangeInStock);
+            context.Stocks.Add(stock);
+        }
+        else
+        {
+            productBusinessEntity.UpdateStock(stock, command.ChangeInStock);
         }
 
-        int? newStock = stock.Quantity - command.ChangeInStock;
-        if (newStock < 0)
-        {
-            return default;
-        }
-
-        stock.Quantity = newStock;
-        await context.SaveChangesAsync(new CancellationToken());
-        return new ProductStockDto(stock.Quantity.Value, productId);
-    }
-
-    private async Task<ProductStockDto?> CreateAndReturnProductStock(UpdateStockCommand command, int productId)
-    {
-        var stock = new Stock()
-        {
-            ProductId = productId,
-            Quantity = command.ChangeInStock,
-            CreatedAt = DateTime.UtcNow,
-            CreatedBy = "Admin",
-            LastUpdatedAt = DateTime.UtcNow,
-            LastUpdatedBy = "Admin"
-        };
-        context.Stocks.Add(stock);
         await context.SaveChangesAsync(new CancellationToken());
         return new ProductStockDto(stock.Quantity.Value, productId);
     }

@@ -1,5 +1,7 @@
-﻿using InventoryAPI.Application.Common;
+﻿using System.Drawing.Printing;
+using InventoryAPI.Application.Common;
 using InventoryAPI.Application.Products.Common;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace InventoryAPI.Application.Products.Command.Update;
 
@@ -15,12 +17,8 @@ public class UpdateProductCommandHandler(IDbContext dbContext) : IUpdateProduct
             return null; // return exception
         }
 
-        productEntity.Name = request.Name;
-        productEntity.Description = request.Description;
-        productEntity.Sku = request.Sku;
-        productEntity.Price = request.Price;
-        productEntity.LastUpdatedBy = "System";
-        productEntity.LastUpdatedAt = DateTime.UtcNow;
+        var productBusinessEntity = new Domain.Models.Product(productEntity);
+        productBusinessEntity.UpdateProduct(request.Name, request.Description, request.Sku, request.Price);
 
         var cancelationToken = new CancellationToken();
         await dbContext.SaveChangesAsync(cancelationToken);
