@@ -1,14 +1,9 @@
 ﻿using InventoryAPI.Application.Common;
-using System;
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InventoryAPI.Application.Stocks.Queries {
     public class GetStockQueryHandler(IDbContext context) : IGetStock {
-        public async Task<int> Handle(int productId) {
+        public async Task<ProductStockDto?> Handle(int productId) {
             if (productId <= 0) {
                 return default;
             }
@@ -23,7 +18,7 @@ namespace InventoryAPI.Application.Stocks.Queries {
                 return default;
             }
 
-            return stock.Quantity.Value;
+            return new ProductStockDto(stock.Quantity ?? 0, productId);
         }
     }
 }

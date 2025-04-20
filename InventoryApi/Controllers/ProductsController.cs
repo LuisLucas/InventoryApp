@@ -60,12 +60,7 @@ namespace InventoryApi.Controllers {
                 return BadRequest("Product data is required.");
             }
 
-            var command = new CreateProductCommand() {
-                Name = productDto.Name,
-                Description = productDto.Description,
-                Sku = productDto.Sku,
-                Price = productDto.Price
-            };
+            var command = new CreateProductCommand(productDto.Name, productDto.Description, productDto.Sku, productDto.Price);
             var product = await this._createProduct.Handle(command);
             return Ok(product);
         }
@@ -101,11 +96,9 @@ namespace InventoryApi.Controllers {
                 return BadRequest("Product id is required.");
             }
 
-            var command = new DeleteProductCommand() {
-                Id = id
-            };
-            var updatedProduct = await this._deleteProduct.Handle(command);
-            return Ok("Success");
+            var command = new DeleteProductCommand(id);
+            var isProductDeleted = await this._deleteProduct.Handle(command);
+            return Ok(isProductDeleted ? "Success" : "Failure");
         }
     }
 }
