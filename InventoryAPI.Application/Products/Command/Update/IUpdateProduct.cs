@@ -1,7 +1,6 @@
-﻿namespace InventoryAPI.Application.Products.Command.Update
+﻿namespace InventoryAPI.Application.Products.Command.Update;
+
+public interface IUpdateProduct
 {
-    public interface IUpdateProduct
-    {
-        Task<ProductDto> Handle(UpdateProductCommand request);
-    }
+    Task<ProductDto> Handle(UpdateProductCommand request);
 }

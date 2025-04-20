@@ -1,7 +1,8 @@
-﻿namespace InventoryAPI.Application.Products.Queries {
-    public interface IGetProducts {
-        Task<IEnumerable<ProductDto>> Handle();
+﻿namespace InventoryAPI.Application.Products.Queries;
 
-        Task<ProductDto> Handle(int productId);
-    }
+public interface IGetProducts
+{
+    Task<IEnumerable<ProductDto>> Handle();
+
+    Task<ProductDto> Handle(int productId);
 }

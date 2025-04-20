@@ -19,7 +19,8 @@ public partial class InventoryContext : DbContext, IDbContext
 
     public virtual DbSet<Stock> Stocks { get; set; }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
         return base.SaveChangesAsync(cancellationToken);
     }
 

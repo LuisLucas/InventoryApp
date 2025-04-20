@@ -1,7 +1,6 @@
-﻿namespace InventoryAPI.Application.Products.Command.Delete
+﻿namespace InventoryAPI.Application.Products.Command.Delete;
+
+public interface IDeleteProduct
 {
-    public interface IDeleteProduct
-    {
-        Task<bool> Handle(DeleteProductCommand request);
-    }
+    Task<bool> Handle(DeleteProductCommand request);
 }
