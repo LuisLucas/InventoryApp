@@ -1,12 +1,11 @@
-﻿using InventoryApi.LinksGenerator;
-using InventoryApi.Models;
-using InventoryAPI.Application.Common;
+﻿using InventoryAPI.Application.Common;
 using InventoryAPI.Application.Products;
 using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
 using InventoryAPI.Application.Products.Command.Update;
 using InventoryAPI.Application.Products.Queries;
-using InventoryAPI.LinksGenerator;
+using InventoryAPI.Hateoas;
+using InventoryAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers;
@@ -34,7 +33,7 @@ public class ProductsController(IGetProducts getProducts,
                 new("Put", new { id = product.Id }, "update_product", "PUT"),
                 new("Delete", new { id = product.Id }, "delete_product", "DELETE"),
             };
-            
+
             List<Link> links = GenerateLinks.BuildLinks(
                 linkGenerator,
                 "Products",

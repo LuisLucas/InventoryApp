@@ -1,7 +1,6 @@
 ﻿using InventoryAPI.Application.Common;
-using InventoryAPI.LinksGenerator;
 
-namespace InventoryApi.LinksGenerator;
+namespace InventoryAPI.Hateoas;
 
 public static class GenerateLinks
 {

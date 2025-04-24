@@ -1,6 +1,6 @@
 ﻿using InventoryAPI.Application.Common;
 
-namespace InventoryApi.Models;
+namespace InventoryAPI.Models;
 
 public class ProductModel
 {
