@@ -1,10 +1,12 @@
-﻿using InventoryApi.Models;
+﻿using InventoryApi.LinksGenerator;
+using InventoryApi.Models;
 using InventoryAPI.Application.Common;
 using InventoryAPI.Application.Products;
 using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
 using InventoryAPI.Application.Products.Command.Update;
 using InventoryAPI.Application.Products.Queries;
+using InventoryAPI.LinksGenerator;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers;
@@ -24,35 +26,25 @@ public class ProductsController(IGetProducts getProducts,
         IEnumerable<ProductDto> products = await getProducts.Handle();
 
         var productsModel = new List<ProductModel>();
-        foreach (var product in products)
+        foreach (ProductDto product in products)
         {
-            var links = new List<Link>();
-            var absoluteUri = linkGenerator.GetUriByAction(
-                HttpContext,
-                action: "Get",
-                controller: "Products",
-                values: new { id = product.Id }); 
-            var link_self = new Link(absoluteUri, "self", "GET");
-            links.Add(link_self);
-
-            var absoluteUriUpdate = linkGenerator.GetUriByAction(
-                HttpContext,
-                action: "Put",
-                controller: "Products",
-                values: new { id = product.Id });
-            var link_update = new Link(absoluteUriUpdate, "update_product", "PUT");
-            links.Add(link_update);
-
-            var absoluteUridelete = linkGenerator.GetUriByAction(
-                HttpContext,
-                action: "Delete",
-                controller: "Products",
-                values: new { id = product.Id });
-            var link_delete = new Link(absoluteUridelete, "delete_product", "DELETE");
-            links.Add(link_delete);
+            var actions = new List<ControllerAction>()
+            {
+                new("Get", new { id = product.Id }, "self", "GET"),
+                new("Put", new { id = product.Id }, "update_product", "PUT"),
+                new("Delete", new { id = product.Id }, "delete_product", "DELETE"),
+            };
+            
+            List<Link> links = GenerateLinks.BuildLinks(
+                linkGenerator,
+                "Products",
+                actions,
+                HttpContext.Request.Scheme,
+                HttpContext.Request.Host);
 
             productsModel.Add(
-                new ProductModel(){
+                new ProductModel()
+                {
                     Id = product.Id,
                     Name = product.Name,
                     Description = product.Description,
@@ -62,7 +54,8 @@ public class ProductsController(IGetProducts getProducts,
                     CreatedBy = product.CreatedBy,
                     LastUpdatedAt = product.LastUpdatedAt,
                     LastUpdatedBy = product.LastUpdatedBy,
-                    Links = links });
+                    Links = links
+                });
         }
         return Ok(productsModel);
     }

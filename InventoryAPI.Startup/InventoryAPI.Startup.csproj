@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\InventoryAPI.Application\InventoryAPI.Application.csproj" />
     <ProjectReference Include="..\InventoryApi.Infrastructure\InventoryAPI.Infrastructure.csproj" />
   </ItemGroup>
 
