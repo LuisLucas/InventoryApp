@@ -1,11 +1,10 @@
-﻿using InventoryAPI.Application.Common;
+﻿using InventoryApi.Hateoas;
 using InventoryAPI.Application.Products;
 using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
 using InventoryAPI.Application.Products.Command.Update;
 using InventoryAPI.Application.Products.Queries;
 using InventoryAPI.Hateoas;
-using InventoryAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers;
@@ -18,45 +17,38 @@ public class ProductsController(IGetProducts getProducts,
                                 IDeleteProduct deleteProduct,
                                 LinkGenerator linkGenerator) : ControllerBase
 {
+    private static readonly string s_controllerName = "Products";
+
     // GET: api/<ProductsController>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductModel>>> Get()
+    public async Task<ActionResult<CollectionResource<ProductDto>>> Get()
     {
         IEnumerable<ProductDto> products = await getProducts.Handle();
 
-        var productsModel = new List<ProductModel>();
-        foreach (ProductDto product in products)
+        var values = new Tuple<string, Func<ProductDto, int>>("id", new Func<ProductDto, int>((product) => product.Id));
+        var itemActions = new List<ControllerAction<ProductDto, int>>()
         {
-            var actions = new List<ControllerAction>()
-            {
-                new("Get", new { id = product.Id }, "self", "GET"),
-                new("Put", new { id = product.Id }, "update_product", "PUT"),
-                new("Delete", new { id = product.Id }, "delete_product", "DELETE"),
-            };
+            new("Get", values, "self", "GET"),
+            new("Put", values, "update_product", "PUT"),
+            new("Delete", values, "delete_product", "DELETE"),
+        };
+        var listActions = new List<ControllerAction>()
+        {
+            new("Get", new { }, "self", "GET"),
+            new("Post", new { }, "create_product", "POST"),
+        };
 
-            List<Link> links = GenerateLinks.BuildLinks(
+        CollectionResource<ProductDto> collectionResource =
+            HateoasFactory.CreateCollectionResponse(
                 linkGenerator,
-                "Products",
-                actions,
+                s_controllerName,
                 HttpContext.Request.Scheme,
-                HttpContext.Request.Host);
+                HttpContext.Request.Host,
+                products,
+                listActions,
+                itemActions);
 
-            productsModel.Add(
-                new ProductModel()
-                {
-                    Id = product.Id,
-                    Name = product.Name,
-                    Description = product.Description,
-                    Sku = product.Sku,
-                    Price = product.Price,
-                    CreatedAt = product.CreatedAt,
-                    CreatedBy = product.CreatedBy,
-                    LastUpdatedAt = product.LastUpdatedAt,
-                    LastUpdatedBy = product.LastUpdatedBy,
-                    Links = links
-                });
-        }
-        return Ok(productsModel);
+        return Ok(collectionResource);
     }
 
     // GET api/<ProductsController>/5

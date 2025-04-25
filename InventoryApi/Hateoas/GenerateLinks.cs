@@ -1,4 +1,4 @@
-﻿using InventoryAPI.Application.Common;
+﻿using InventoryApi.Hateoas;
 
 namespace InventoryAPI.Hateoas;
 

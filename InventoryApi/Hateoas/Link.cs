@@ -1,2 +1,2 @@
-﻿namespace InventoryAPI.Application.Common;
+﻿namespace InventoryAPI.Hateoas;
 public record class Link(string Href, string Rel, string Method);
