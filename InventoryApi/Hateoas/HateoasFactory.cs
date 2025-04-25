@@ -1,24 +1,36 @@
-﻿using InventoryAPI.Application.Products;
+﻿using System.Reflection.Emit;
+using InventoryAPI.Application.Products;
 using InventoryAPI.Hateoas;
 
 namespace InventoryApi.Hateoas;
 
-public static class HateoasFactory
+public interface IHateoas
 {
-    public static void CreateResponse<T>(IEnumerable<ProductDto> products)
+    CollectionResource<T> CreateCollectionResponse<T, R>(
+                                                        string controller,
+                                                        IEnumerable<T> items,
+                                                        List<ControllerAction> listActions,
+                                                        List<ControllerAction<T, R>> itemActions);
+}
+
+public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor httpContextAccessor) : IHateoas
+{
+    public void CreateResponse<T>()
     {
         throw new NotImplementedException();
     }
 
-    public static CollectionResource<T> CreateCollectionResponse<T, R>(
-        LinkGenerator linkGenerator,
+    public CollectionResource<T> CreateCollectionResponse<T, R>(
         string controller,
-        string scheme,
-        HostString host,
         IEnumerable<T> items,
         List<ControllerAction> listActions,
         List<ControllerAction<T, R>> itemActions)
     {
+        ArgumentNullException.ThrowIfNull(httpContextAccessor.HttpContext);
+
+        string scheme = httpContextAccessor.HttpContext.Request.Scheme;
+        HostString host = httpContextAccessor.HttpContext.Request.Host;
+
         var collectionResponse = new CollectionResource<T>
         {
             Items = AddLinkstoItems(linkGenerator, controller, scheme, host, items, itemActions),

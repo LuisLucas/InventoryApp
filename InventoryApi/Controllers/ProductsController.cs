@@ -4,7 +4,6 @@ using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
 using InventoryAPI.Application.Products.Command.Update;
 using InventoryAPI.Application.Products.Queries;
-using InventoryAPI.Hateoas;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InventoryApi.Controllers;
@@ -15,7 +14,7 @@ public class ProductsController(IGetProducts getProducts,
                                 ICreateProduct createProduct,
                                 IUpdateProduct updateProduct,
                                 IDeleteProduct deleteProduct,
-                                LinkGenerator linkGenerator) : ControllerBase
+                                IHateoas hateoas) : ControllerBase
 {
     private static readonly string s_controllerName = "Products";
 
@@ -39,11 +38,8 @@ public class ProductsController(IGetProducts getProducts,
         };
 
         CollectionResource<ProductDto> collectionResource =
-            HateoasFactory.CreateCollectionResponse(
-                linkGenerator,
+            hateoas.CreateCollectionResponse(
                 s_controllerName,
-                HttpContext.Request.Scheme,
-                HttpContext.Request.Host,
                 products,
                 listActions,
                 itemActions);
