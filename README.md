@@ -35,7 +35,7 @@ This is a learning project to explore **HATEOAS** (Hypermedia As The Engine Of A
 
 ## 🔧 HATEOAS Implementation
 
-- 🚧 Custom `Link` and `Resource<T>` wrappers
+- ✅ Custom `Link` and `Resource<T>` wrappers
 - ✅ `LinkBuilder` that generates links per route name
 - 🚧 Supports dynamic links per object/resource state
 - 🚧 Future: Add role-based filtering and link templates
