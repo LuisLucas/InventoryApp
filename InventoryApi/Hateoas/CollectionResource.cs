@@ -1,5 +1,4 @@
-﻿using System.Resources;
-using InventoryAPI.Hateoas;
+﻿using InventoryAPI.Hateoas;
 
 namespace InventoryApi.Hateoas;
 

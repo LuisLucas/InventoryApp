@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\HateoasGenerator\HateoasGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\InventoryAPI.Startup\InventoryAPI.Startup.csproj" />
   </ItemGroup>
 

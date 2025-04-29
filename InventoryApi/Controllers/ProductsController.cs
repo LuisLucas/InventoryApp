@@ -10,11 +10,12 @@ namespace InventoryApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[HateoasLib.EnumGenerators.EnableHateoas(typeof(ProductDto))]
 public class ProductsController(IGetProducts getProducts,
                                 ICreateProduct createProduct,
                                 IUpdateProduct updateProduct,
                                 IDeleteProduct deleteProduct,
-                                IHateoas hateoas) : ControllerBase
+                                HateoasLib.Myclasses.IHateoasMeta<ProductsController, ProductDto> hateoasMeta) : ControllerBase
 {
     private static readonly string s_controllerName = "Products";
 
@@ -24,8 +25,8 @@ public class ProductsController(IGetProducts getProducts,
     {
         IEnumerable<ProductDto> products = await getProducts.Handle();
 
-        var values = new Tuple<string, Func<ProductDto, int>>("id", new Func<ProductDto, int>((product) => product.Id));
-        var itemActions = new List<ControllerAction<ProductDto, int>>()
+        var values = new Tuple<string, Func<ProductDto, object>>("id", new Func<ProductDto, object>((product) => product.Id));
+        var itemActions = new List<ControllerAction<ProductDto, object>>()
         {
             new("Get", values, "self", "GET"),
             new("Put", values, "update_product", "PUT"),
@@ -37,12 +38,11 @@ public class ProductsController(IGetProducts getProducts,
             new("Post", new { }, "create_product", "POST"),
         };
 
-        CollectionResource<ProductDto> collectionResource =
-            hateoas.CreateCollectionResponse(
-                s_controllerName,
-                products,
-                listActions,
-                itemActions);
+        CollectionResource<ProductDto> collectionResource = hateoasMeta.CreateCollectionResponse(
+                                                                                                products,
+                                                                                                listActions,
+                                                                                                itemActions);
+
 
         return Ok(collectionResource);
     }

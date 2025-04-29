@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryAPI.Domain", "Inve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InventoryAPI.Startup", "InventoryAPI.Startup\InventoryAPI.Startup.csproj", "{34BF4A2B-B4D0-45E1-9B07-517F2096B5FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HateoasGenerator", "HateoasGenerator\HateoasGenerator.csproj", "{0A80C855-23B4-4C37-A7FE-A7A4355F784A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{34BF4A2B-B4D0-45E1-9B07-517F2096B5FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{34BF4A2B-B4D0-45E1-9B07-517F2096B5FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{34BF4A2B-B4D0-45E1-9B07-517F2096B5FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A80C855-23B4-4C37-A7FE-A7A4355F784A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A80C855-23B4-4C37-A7FE-A7A4355F784A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A80C855-23B4-4C37-A7FE-A7A4355F784A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A80C855-23B4-4C37-A7FE-A7A4355F784A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
