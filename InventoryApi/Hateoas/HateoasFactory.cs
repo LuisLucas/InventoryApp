@@ -1,12 +1,12 @@
-﻿using System.Reflection.Emit;
-using InventoryAPI.Application.Products;
+﻿using HateoasLib.Models;
+using HateoasLib.Models.ResponseModels;
 using InventoryAPI.Hateoas;
 
 namespace InventoryApi.Hateoas;
 
 public interface IHateoas
 {
-    CollectionResource<T> CreateCollectionResponse<T, R>(
+   CollectionResource<T> CreateCollectionResponse<T, R>(
                                                         string controller,
                                                         IEnumerable<T> items,
                                                         List<ControllerAction> listActions,

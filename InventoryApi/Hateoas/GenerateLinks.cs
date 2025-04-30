@@ -1,4 +1,5 @@
-﻿using InventoryApi.Hateoas;
+﻿using HateoasLib.Models.ResponseModels;
+using HateoasLib.Models;
 
 namespace InventoryAPI.Hateoas;
 

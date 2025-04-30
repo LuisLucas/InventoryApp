@@ -1,4 +1,6 @@
-﻿using InventoryApi.Hateoas;
+﻿using HateoasLib.Interfaces;
+using HateoasLib.Models;
+using HateoasLib.Models.ResponseModels;
 using InventoryAPI.Application.Products;
 using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
@@ -15,10 +17,8 @@ public class ProductsController(IGetProducts getProducts,
                                 ICreateProduct createProduct,
                                 IUpdateProduct updateProduct,
                                 IDeleteProduct deleteProduct,
-                                HateoasLib.Myclasses.IHateoasMeta<ProductsController, ProductDto> hateoasMeta) : ControllerBase
+                                IHateoasMeta<ProductsController, ProductDto> hateoasMeta) : ControllerBase
 {
-    private static readonly string s_controllerName = "Products";
-
     // GET: api/<ProductsController>
     [HttpGet]
     public async Task<ActionResult<CollectionResource<ProductDto>>> Get()

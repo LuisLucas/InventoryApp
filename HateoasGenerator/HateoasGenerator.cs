@@ -12,6 +12,10 @@ public class HateoasGenerator : IIncrementalGenerator
     {
         AddAttributeClassToSource(context);
         AddInterfaceToSource(context);
+        AddLinkToSource(context);
+        AddResourceToSource(context);
+        AddCollectionResourceToSource(context);
+        AddControllerActionToSource(context);
 
         IncrementalValuesProvider<INamedTypeSymbol> classDeclarations = context.SyntaxProvider
             .CreateSyntaxProvider(
@@ -19,7 +23,8 @@ public class HateoasGenerator : IIncrementalGenerator
                 transform: (ctx, _) => GetSemanticTarget(ctx))
             .Where(symbol => symbol != null);
 
-        IncrementalValueProvider<(Compilation Left, System.Collections.Immutable.ImmutableArray<INamedTypeSymbol> Right)> compilationAndClasses = context.CompilationProvider.Combine(classDeclarations.Collect());
+        IncrementalValueProvider<(Compilation Left, System.Collections.Immutable.ImmutableArray<INamedTypeSymbol> Right)> compilationAndClasses =
+            context.CompilationProvider.Combine(classDeclarations.Collect());
 
         context.RegisterSourceOutput(compilationAndClasses, (spc, source) =>
         {
@@ -36,8 +41,7 @@ public class HateoasGenerator : IIncrementalGenerator
 
                 string controllerName = symbol.Name.Replace("Controller", "");
                 AddControllerHateoasClassToSource(spc, symbol, dtoType, controllerName);
-
-                registration.Add(symbol.Name, $"            services.AddScoped<IHateoasMeta<{symbol.Name}, {dtoType}>, {controllerName}HateoasMeta>();");
+                AddIOCClassRegistration(registration, symbol, dtoType, controllerName);
 
             }
 
@@ -45,13 +49,15 @@ public class HateoasGenerator : IIncrementalGenerator
         });
     }
 
+    private static void AddIOCClassRegistration(Dictionary<string, string> registration, INamedTypeSymbol symbol, string dtoType, string controllerName) => registration.Add(symbol.Name, $"            services.AddScoped<IHateoasMeta<{symbol.Name}, {dtoType}>, {controllerName}HateoasMeta>();");
+
     private static void AddIOCExtensionMethodToSource(SourceProductionContext spc, Dictionary<string, string> registration)
     {
         var newSb = new StringBuilder();
         newSb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
         newSb.AppendLine("using GeneratedHateoas;");
         newSb.AppendLine("using InventoryApi.Controllers;"); // TODO: REMOVE HARDCODED USING STRINGS
-        newSb.AppendLine("using HateoasLib.Myclasses;");
+        newSb.AppendLine("using HateoasLib.Interfaces;");
         newSb.AppendLine("namespace GeneratedHateoas");
         newSb.AppendLine("{");
         newSb.AppendLine("    public static class HateoasRegistration");
@@ -75,10 +81,11 @@ public class HateoasGenerator : IIncrementalGenerator
     private static void AddControllerHateoasClassToSource(SourceProductionContext spc, INamedTypeSymbol symbol, string dtoType, string controllerName)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("using InventoryApi.Hateoas;"); // TODO: REMOVE HARDCODED USING STRINGS
+        sb.AppendLine("using HateoasLib.Interfaces;"); // TODO: REMOVE HARDCODED USING STRINGS
         sb.AppendLine("using InventoryAPI.Application.Products;");
-        sb.AppendLine("using HateoasLib.Myclasses;");
         sb.AppendLine("using InventoryApi.Controllers;");
+        sb.AppendLine("using HateoasLib.Models;");
+        sb.AppendLine("using HateoasLib.Models.ResponseModels;");
         sb.AppendLine("using InventoryApi.Hateoas;");
         sb.AppendLine("namespace GeneratedHateoas");
         sb.AppendLine("{");
@@ -119,6 +126,22 @@ public class HateoasGenerator : IIncrementalGenerator
     private static void AddAttributeClassToSource(IncrementalGeneratorInitializationContext context) => context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
                                                                 "EnumExtensionsAttribute.g.cs",
                                                                 SourceText.From(SourceGenerationHelper.Attribute, Encoding.UTF8)));
+
+    private void AddCollectionResourceToSource(IncrementalGeneratorInitializationContext context) => context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
+                                                                "CollectionResource.g.cs",
+                                                                SourceText.From(SourceGenerationHelper.CollectionResouceClass, Encoding.UTF8)));
+
+    private void AddResourceToSource(IncrementalGeneratorInitializationContext context) => context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
+                                                                "Resource.g.cs",
+                                                                SourceText.From(SourceGenerationHelper.ResourceClass, Encoding.UTF8)));
+
+    private void AddLinkToSource(IncrementalGeneratorInitializationContext context) => context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
+                                                            "Link.g.cs",
+                                                            SourceText.From(SourceGenerationHelper.LinkClass, Encoding.UTF8)));
+
+    private void AddControllerActionToSource(IncrementalGeneratorInitializationContext context) => context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
+                                                        "ControllerActionRecords.g.cs",
+                                                        SourceText.From(SourceGenerationHelper.ControllerActionRecords, Encoding.UTF8)));
 
     private static bool IsCandidateClass(SyntaxNode node) =>
         node is ClassDeclarationSyntax c && c.AttributeLists.Count > 0;
