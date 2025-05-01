@@ -5,7 +5,7 @@ namespace HateoasGenerator.Interfaces;
 internal static class IHateoas
 {
     private const string FileName = "IHateoas";
-    public const string InterfaceClass = @"
+    public const string Class = @"
 using HateoasLib.Models.ResponseModels;
 using HateoasLib.Models;
 
@@ -18,8 +18,8 @@ public interface IHateoas<T, R>
         List<ControllerAction<R, object>> itemActions);
 }";
 
-    internal static IncrementalGeneratorInitializationContext AddAttributeClassToSource(this IncrementalGeneratorInitializationContext context)
+    internal static IncrementalGeneratorInitializationContext AddIHateoasToSource(this IncrementalGeneratorInitializationContext context)
     {
-        return context.AddFileToSource(InterfaceClass, FileName);
+        return context.AddFileToSource(Class, FileName);
     }
 }

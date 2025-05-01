@@ -12,7 +12,7 @@ public record ControllerAction(string action, object? values, string rel, string
 
 public record ControllerAction<T, R>(string action, Tuple<string, Func<T, R>> values, string rel, string method);";
 
-    internal static IncrementalGeneratorInitializationContext AddAttributeToSource(this IncrementalGeneratorInitializationContext context)
+    internal static IncrementalGeneratorInitializationContext AddControllerActionToSource(this IncrementalGeneratorInitializationContext context)
     {
         return context.AddFileToSource(Class, FileName);
     }
