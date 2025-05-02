@@ -1,7 +1,7 @@
-﻿/*using HateoasLib.Attributes;
+﻿using HateoasLib.Attributes;
 using HateoasLib.Interfaces;
 using HateoasLib.Models;
-using HateoasLib.Models.ResponseModels;*/
+using HateoasLib.Models.ResponseModels;
 using InventoryAPI.Application.Products;
 using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
@@ -13,16 +13,16 @@ namespace InventoryApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-//[EnableHateoas(typeof(ProductDto))]
+[EnableHateoas(typeof(ProductDto))]
 public class ProductsController(IGetProducts getProducts,
                                 ICreateProduct createProduct,
                                 IUpdateProduct updateProduct,
-                                IDeleteProduct deleteProduct/*,
-                                IHateoas<ProductsController, ProductDto> hateoasMeta*/) : ControllerBase
+                                IDeleteProduct deleteProduct,
+                                IHateoas<ProductsController, ProductDto> hateoasMeta) : ControllerBase
 {
     // GET: api/<ProductsController>
     [HttpGet]
-    /*public async Task<ActionResult<CollectionResource<ProductDto>>> Get()
+    public async Task<ActionResult> Get()
     {
         IEnumerable<ProductDto> products = await getProducts.Handle();
 
@@ -44,7 +44,7 @@ public class ProductsController(IGetProducts getProducts,
 
 
         return Ok(collectionResource);
-    }*/
+    }
 
     // GET api/<ProductsController>/5
     [HttpGet("{id}")]
