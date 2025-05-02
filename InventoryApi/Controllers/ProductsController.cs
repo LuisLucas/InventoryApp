@@ -1,6 +1,7 @@
-﻿using HateoasLib.Interfaces;
+﻿/*using HateoasLib.Attributes;
+using HateoasLib.Interfaces;
 using HateoasLib.Models;
-using HateoasLib.Models.ResponseModels;
+using HateoasLib.Models.ResponseModels;*/
 using InventoryAPI.Application.Products;
 using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
@@ -12,16 +13,16 @@ namespace InventoryApi.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[HateoasLib.EnumGenerators.EnableHateoas(typeof(ProductDto))]
+//[EnableHateoas(typeof(ProductDto))]
 public class ProductsController(IGetProducts getProducts,
                                 ICreateProduct createProduct,
                                 IUpdateProduct updateProduct,
-                                IDeleteProduct deleteProduct,
-                                IHateoasMeta<ProductsController, ProductDto> hateoasMeta) : ControllerBase
+                                IDeleteProduct deleteProduct/*,
+                                IHateoas<ProductsController, ProductDto> hateoasMeta*/) : ControllerBase
 {
     // GET: api/<ProductsController>
     [HttpGet]
-    public async Task<ActionResult<CollectionResource<ProductDto>>> Get()
+    /*public async Task<ActionResult<CollectionResource<ProductDto>>> Get()
     {
         IEnumerable<ProductDto> products = await getProducts.Handle();
 
@@ -38,14 +39,12 @@ public class ProductsController(IGetProducts getProducts,
             new("Post", new { }, "create_product", "POST"),
         };
 
-        CollectionResource<ProductDto> collectionResource = hateoasMeta.CreateCollectionResponse(
-                                                                                                products,
-                                                                                                listActions,
-                                                                                                itemActions);
+        CollectionResource<ProductDto> collectionResource = hateoasMeta
+                                                                .CreateCollectionResponse(products, listActions, itemActions);
 
 
         return Ok(collectionResource);
-    }
+    }*/
 
     // GET api/<ProductsController>/5
     [HttpGet("{id}")]

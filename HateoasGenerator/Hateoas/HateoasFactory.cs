@@ -1,19 +1,18 @@
-﻿using HateoasLib.Models;
-using HateoasLib.Models.ResponseModels;
-using InventoryAPI.Hateoas;
+﻿using HateoasGenerator.Helpers;
+using Microsoft.CodeAnalysis;
 
-namespace InventoryApi.Hateoas;
-
-public interface IHateoas
+namespace HateoasGenerator.HateoasFactory;
+internal static class HateoasFactory
 {
-   CollectionResource<T> CreateCollectionResponse<T, R>(
-                                                        string controller,
-                                                        IEnumerable<T> items,
-                                                        List<ControllerAction> listActions,
-                                                        List<ControllerAction<T, R>> itemActions);
-}
+    private const string FileName = "HateoasFactory";
+    private const string Class = @"
+using HateoasLib.Models;
+using HateoasLib.Models.ResponseModels;
+using HateoasLib.Hateoas;
 
-public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor httpContextAccessor) : IHateoas
+namespace HateoasLib.Hateoas;
+
+public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor httpContextAccessor) : IHateoasFactory
 {
     public void CreateResponse<T>()
     {
@@ -78,5 +77,11 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
                                     listActions,
                                     scheme,
                                     host);
+    }
+}";
+
+    internal static IncrementalGeneratorInitializationContext AddFactoryToSource(this IncrementalGeneratorInitializationContext context)
+    {
+        return context.AddFileToSource(Class, FileName);
     }
 }

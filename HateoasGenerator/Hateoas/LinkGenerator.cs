@@ -1,7 +1,15 @@
-﻿using HateoasLib.Models.ResponseModels;
+﻿using HateoasGenerator.Helpers;
+using Microsoft.CodeAnalysis;
+
+namespace HateoasGenerator.Hateoas;
+internal static class LinkGenerator
+{
+    private const string FileName = "GenerateLinks";
+    private const string Class = @"
+using HateoasLib.Models.ResponseModels;
 using HateoasLib.Models;
 
-namespace InventoryAPI.Hateoas;
+namespace HateoasLib.Hateoas;
 
 public static class GenerateLinks
 {
@@ -23,5 +31,11 @@ public static class GenerateLinks
             }
         }
         return links;
+    }
+}";
+
+    internal static IncrementalGeneratorInitializationContext AddGenerateLinksToSource(this IncrementalGeneratorInitializationContext context)
+    {
+        return context.AddFileToSource(Class, FileName);
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 
 namespace HateoasGenerator.Attributes;
-internal static class EnableHateoasAttribute
+internal static class EnableHateoasAttributeHelper
 {
     internal const string FileName = "EnableHateoasAttribute";
     private const string Class = @"

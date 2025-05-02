@@ -1,12 +1,14 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
 using HateoasGenerator.Attributes;
+using HateoasGenerator.Hateoas;
+using HateoasGenerator.HateoasFactory;
+using HateoasGenerator.Helpers;
 using HateoasGenerator.Interfaces;
 using HateoasGenerator.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Immutable;
-using HateoasGenerator.Helpers;
 
 namespace HateoasGenerator;
 
@@ -15,7 +17,18 @@ public class HateoasGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        context.AddAttributeToSource();
+        //System.Diagnostics.Debugger.Launch();
+
+        context
+            .AddAttributeToSource()
+            .AddIHateoasToSource()
+            .AddLinkToSource()
+            .AddResourceToSource()
+            .AddCollectionResourceToSource()
+            .AddControllerActionToSource()
+            .AddIHateoasFactoryToSource()
+            .AddFactoryToSource()
+            .AddGenerateLinksToSource();
 
         IncrementalValuesProvider<INamedTypeSymbol> classDeclarations = context.SyntaxProvider
             .CreateSyntaxProvider(
@@ -30,16 +43,6 @@ public class HateoasGenerator : IIncrementalGenerator
         {
             Compilation compilation = source.Left;
             IEnumerable<INamedTypeSymbol> classes = source.Right.Distinct();
-            
-            if (classes.Any())
-            {
-                context
-                    .AddIHateoasToSource()
-                    .AddLinkToSource()
-                    .AddResourceToSource()
-                    .AddCollectionResourceToSource()
-                    .AddControllerActionToSource();
-            }
 
             var registration = new Dictionary<string, string>();
             var usingsForIOC = new List<string>();
@@ -65,7 +68,7 @@ public class HateoasGenerator : IIncrementalGenerator
         });
     }
 
-    private static void AddIOCClassRegistration(Dictionary<string, string> registration, INamedTypeSymbol symbol, string dtoType, string controllerName) => registration.Add(symbol.Name, $"            services.AddScoped<IHateoasMeta<{symbol.Name}, {dtoType}>, {controllerName}HateoasMeta>();");
+    private static void AddIOCClassRegistration(Dictionary<string, string> registration, INamedTypeSymbol symbol, string dtoType, string controllerName) => registration.Add(symbol.Name, $"            services.AddScoped<IHateoas<{symbol.Name}, {dtoType}>, {controllerName}HateoasMeta>();");
 
     private static void AddIOCExtensionMethodToSource(SourceProductionContext spc, Dictionary<string, string> registration, List<string> usingsForIOC)
     {
@@ -114,7 +117,7 @@ public class HateoasGenerator : IIncrementalGenerator
         sb.AppendLine($"using {dtoNamespace};");
         sb.AppendLine("namespace GeneratedHateoas");
         sb.AppendLine("{");
-        sb.AppendLine($"  public class {controllerName}HateoasMeta(IHateoas hateoas) : IHateoasMeta<{symbol.Name},{dtoName}>");
+        sb.AppendLine($"  public class {controllerName}HateoasMeta(IHateoas hateoas) : IHateoas<{symbol.Name},{dtoName}>");
         sb.AppendLine("   {");
         sb.AppendLine($"    private readonly string ConstructorName = \"{controllerName}\";");
         sb.AppendLine($"    public CollectionResource<{dtoName}> CreateCollectionResponse(IEnumerable<{dtoName}> items, List<ControllerAction> listActions, List<ControllerAction<{dtoName}, object>> itemActions)");
@@ -136,7 +139,7 @@ public class HateoasGenerator : IIncrementalGenerator
     {
         AttributeData attr = symbol
             .GetAttributes()
-            .FirstOrDefault(ad => ad.AttributeClass?.Name == EnableHateoasAttribute.FileName);
+            .FirstOrDefault(ad => ad.AttributeClass?.Name == EnableHateoasAttributeHelper.FileName);
 
         if (attr == null || attr.ConstructorArguments.Length != 1)
         {
