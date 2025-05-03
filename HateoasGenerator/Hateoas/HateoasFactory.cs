@@ -74,26 +74,37 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
         var resourceItems = new List<Resource<T>>();
         foreach (T? item in items)
         {
-            var itemControllerActions = new List<ControllerAction>();
-            foreach (ControllerAction<T, R> c in itemActions)
-            {
-                var routeValueDic = new RouteValueDictionary
-                {
-                    { c.values.Item1, c.values.Item2.Invoke(item) }
-                };
-                itemControllerActions.Add(new ControllerAction(c.action, routeValueDic, c.rel, c.method));
-            }
-
-            var resource = new Resource<T>
-            {
-                Item = item,
-                Links = BuildLinks(linkGenerator, controller, scheme, host, itemControllerActions)
-            };
+            var resource = AddLinksToItem(linkGenerator, controller, scheme, host, item, itemActions);
             resourceItems.Add(resource);
         }
         return resourceItems;
     }
 
+    private static Resource<T> AddLinksToItem<T, R>(LinkGenerator linkGenerator,
+        string controller,
+        string scheme,
+        HostString host,
+        T item,
+        List<ControllerAction<T, R>> itemActions)
+    {
+        var itemControllerActions = new List<ControllerAction>();
+        foreach (ControllerAction<T, R> c in itemActions)
+        {
+            var routeValueDic = new RouteValueDictionary
+            {
+                { c.values.Item1, c.values.Item2.Invoke(item) }
+            };
+            itemControllerActions.Add(new ControllerAction(c.action, routeValueDic, c.rel, c.method));
+        }
+
+        var resource = new Resource<T>
+        {
+            Item = item,
+            Links = BuildLinks(linkGenerator, controller, scheme, host, itemControllerActions)
+        };
+        return resource;
+    }
+    
     private static List<Link> BuildLinks(LinkGenerator linkGenerator, string controller, string scheme, HostString host, List<ControllerAction> listActions)
     {
         return GenerateLinks.BuildLinks(
