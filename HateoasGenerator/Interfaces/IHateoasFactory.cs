@@ -9,10 +9,15 @@ internal static class IHateoasFactory
 using HateoasLib.Models.ResponseModels;
 using HateoasLib.Models;
 
-namespace HateoasLib.Hateoas;
+namespace HateoasLib.Interfaces;
 
 public interface IHateoasFactory
 {
+    Resource<T> CreateResponse<T, R>(
+                                    string controller,
+                                    T item,
+                                    List<ControllerAction<T, R>> itemActions);
+
    CollectionResource<T> CreateCollectionResponse<T, R>(
                                                         string controller,
                                                         IEnumerable<T> items,

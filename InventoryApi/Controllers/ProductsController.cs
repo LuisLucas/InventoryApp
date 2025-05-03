@@ -48,7 +48,7 @@ public class ProductsController(IGetProducts getProducts,
 
     // GET api/<ProductsController>/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProductDto>> Get(int id)
+    public async Task<ActionResult> Get(int id)
     {
         if (id == 0)
         {
@@ -61,7 +61,17 @@ public class ProductsController(IGetProducts getProducts,
             return BadRequest("Product not found");
         }
 
-        return Ok(product);
+        var values = new Tuple<string, Func<ProductDto, object>>("id", new Func<ProductDto, object>((product) => product.Id));
+        var itemActions = new List<ControllerAction<ProductDto, object>>()
+        {
+            new("Get", values, "self", "GET"),
+            new("Put", values, "update_product", "PUT"),
+            new("Delete", values, "delete_product", "DELETE"),
+        };
+        Resource<ProductDto> resource = hateoasMeta
+                                            .CreateResponse(product, itemActions);
+
+        return Ok(resource);
     }
 
     // POST api/<ProductsController>

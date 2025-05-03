@@ -58,47 +58,17 @@ public class HateoasGenerator : IIncrementalGenerator
                 string controllerName = symbol.Name.Replace("Controller", "");
 
                 AddControllerHateoasClassToSource(spc, symbol, dtoName, dtoNamespace, controllerName, controllerNamespace);
-                AddIOCClassRegistration(registration, symbol, dtoName, controllerName);
+                IOCExtension.AddIOCClassRegistration(registration, symbol, dtoName, controllerName);
 
                 usingsForIOC.Add(dtoNamespace);
                 usingsForIOC.Add(controllerNamespace);
             }
 
-            AddIOCExtensionMethodToSource(spc, registration, usingsForIOC);
+            IOCExtension.AddIOCExtensionMethodToSource(spc, registration, usingsForIOC);
         });
     }
 
-    private static void AddIOCClassRegistration(Dictionary<string, string> registration, INamedTypeSymbol symbol, string dtoType, string controllerName) => registration.Add(symbol.Name, $"            services.AddScoped<IHateoas<{symbol.Name}, {dtoType}>, {controllerName}HateoasMeta>();");
-
-    private static void AddIOCExtensionMethodToSource(SourceProductionContext spc, Dictionary<string, string> registration, List<string> usingsForIOC)
-    {
-        var newSb = new StringBuilder();
-        newSb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
-        newSb.AppendLine("using GeneratedHateoas;");
-        newSb.AppendLine("using HateoasLib.Interfaces;");
-        foreach (var usingNameSpace in usingsForIOC)
-        {
-            newSb.AppendLine($"using {usingNameSpace};");
-        }
-        newSb.AppendLine("namespace GeneratedHateoas");
-        newSb.AppendLine("{");
-        newSb.AppendLine("    public static class HateoasRegistration");
-        newSb.AppendLine("    {");
-        newSb.AppendLine("        public static IServiceCollection AddHateoasProviders(this IServiceCollection services)");
-        newSb.AppendLine("        {");
-
-        foreach (var regist in registration)
-        {
-            newSb.AppendLine(regist.Value);
-        }
-
-        newSb.AppendLine("            return services;");
-        newSb.AppendLine("        }");
-        newSb.AppendLine("    }");
-        newSb.AppendLine("}");
-
-        spc.AddSource("HateoasRegistration.g.cs", SourceText.From(newSb.ToString(), Encoding.UTF8));
-    }
+    
 
     private static void AddControllerHateoasClassToSource(
         SourceProductionContext spc,
@@ -112,12 +82,11 @@ public class HateoasGenerator : IIncrementalGenerator
         sb.AppendLine("using HateoasLib.Interfaces;");
         sb.AppendLine("using HateoasLib.Models;");
         sb.AppendLine("using HateoasLib.Models.ResponseModels;");
-        sb.AppendLine("using InventoryApi.Hateoas;");
         sb.AppendLine($"using {controllerNamespace};");
         sb.AppendLine($"using {dtoNamespace};");
         sb.AppendLine("namespace GeneratedHateoas");
         sb.AppendLine("{");
-        sb.AppendLine($"  public class {controllerName}HateoasMeta(IHateoas hateoas) : IHateoas<{symbol.Name},{dtoName}>");
+        sb.AppendLine($"  public class {controllerName}HateoasMeta(IHateoasFactory hateoas) : IHateoas<{symbol.Name},{dtoName}>");
         sb.AppendLine("   {");
         sb.AppendLine($"    private readonly string ConstructorName = \"{controllerName}\";");
         sb.AppendLine($"    public CollectionResource<{dtoName}> CreateCollectionResponse(IEnumerable<{dtoName}> items, List<ControllerAction> listActions, List<ControllerAction<{dtoName}, object>> itemActions)");
@@ -128,6 +97,15 @@ public class HateoasGenerator : IIncrementalGenerator
         sb.AppendLine("                                                                 listActions,");
         sb.AppendLine("                                                                 itemActions);");
         sb.AppendLine("         return collectionResponse;");
+        sb.AppendLine("     }");
+        sb.AppendLine("");
+        sb.AppendLine($"    public Resource<{dtoName}> CreateResponse({dtoName} item, List<ControllerAction<{dtoName}, object>> itemActions)");
+        sb.AppendLine("     {");
+        sb.AppendLine($"        Resource <{dtoName}> response = hateoas.CreateResponse<{dtoName}, object>(");
+        sb.AppendLine("                                                                 ConstructorName,");
+        sb.AppendLine("                                                                 item,");
+        sb.AppendLine("                                                                 itemActions);");
+        sb.AppendLine("         return response;");
         sb.AppendLine("     }");
         sb.AppendLine("  }");
         sb.AppendLine("}");

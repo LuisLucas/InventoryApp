@@ -1,4 +1,4 @@
-﻿//using GeneratedHateoas;
+﻿using GeneratedHateoas;
 using InventoryAPI.Startup;
 
 namespace InventoryApi;
@@ -24,8 +24,7 @@ public class Program
         DependecyInjection.AddApplication(builder.Services);
 
         builder.Services.AddHttpContextAccessor();
-        //builder.Services.AddTransient<IHateoas, HateoasFactory>();
-        //builder.Services.AddHateoasProviders();
+        builder.Services.AddHateoasProviders();
 
 
         WebApplication app = builder.Build();

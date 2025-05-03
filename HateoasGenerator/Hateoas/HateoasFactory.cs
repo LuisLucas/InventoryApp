@@ -9,14 +9,39 @@ internal static class HateoasFactory
 using HateoasLib.Models;
 using HateoasLib.Models.ResponseModels;
 using HateoasLib.Hateoas;
+using HateoasLib.Interfaces;
 
 namespace HateoasLib.Hateoas;
 
 public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor httpContextAccessor) : IHateoasFactory
 {
-    public void CreateResponse<T>()
+    public Resource<T> CreateResponse<T, R>(
+                        string controller,
+                        T item,
+                        List<ControllerAction<T, R>> itemActions)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(httpContextAccessor.HttpContext);
+
+        string scheme = httpContextAccessor.HttpContext.Request.Scheme;
+        HostString host = httpContextAccessor.HttpContext.Request.Host;
+
+        var resourceItes = new Resource<T>();
+        var itemControllerActions = new List<ControllerAction>();
+        foreach (ControllerAction<T, R> c in itemActions)
+        {
+            var routeValueDic = new RouteValueDictionary
+            {
+                { c.values.Item1, c.values.Item2.Invoke(item) }
+            };
+            itemControllerActions.Add(new ControllerAction(c.action, routeValueDic, c.rel, c.method));
+        }
+
+        var resource = new Resource<T>
+        {
+            Item = item,
+            Links = BuildLinks(linkGenerator, controller, scheme, host, itemControllerActions)
+        };
+        return resource;
     }
 
     public CollectionResource<T> CreateCollectionResponse<T, R>(

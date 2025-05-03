@@ -13,6 +13,9 @@ namespace HateoasLib.Interfaces;
 
 public interface IHateoas<T, R>
 {
+     Resource<R> CreateResponse(R item,
+        List<ControllerAction<R, object>> itemActions);
+    
     CollectionResource<R> CreateCollectionResponse(IEnumerable<R> items,
         List<ControllerAction> listActions,
         List<ControllerAction<R, object>> itemActions);
