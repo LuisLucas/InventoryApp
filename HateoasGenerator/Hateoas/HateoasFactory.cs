@@ -22,8 +22,7 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
     {
         ArgumentNullException.ThrowIfNull(httpContextAccessor.HttpContext);
 
-        string scheme = httpContextAccessor.HttpContext.Request.Scheme;
-        HostString host = httpContextAccessor.HttpContext.Request.Host;
+        (string? scheme, HostString? host) = ExtractSchemeAndHost();
 
         var resourceItes = new Resource<T>();
         var itemControllerActions = new List<ControllerAction>();
@@ -39,7 +38,23 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
         var resource = new Resource<T>
         {
             Item = item,
-            Links = BuildLinks(linkGenerator, controller, scheme, host, itemControllerActions)
+            Links = BuildLinks(linkGenerator, controller, scheme, host.Value, itemControllerActions)
+        };
+        return resource;
+    }
+
+    public Resource<T> CreateResponse<T>(
+                                string controller,
+                                T item,
+                                List<ControllerAction> itemActions)
+    {
+        ArgumentNullException.ThrowIfNull(httpContextAccessor.HttpContext);
+
+        (string? scheme, HostString? host) = ExtractSchemeAndHost();
+        var resource = new Resource<T>
+        {
+            Item = item,
+            Links = BuildLinks(linkGenerator, controller, scheme, host.Value, itemActions)
         };
         return resource;
     }
@@ -52,13 +67,12 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
     {
         ArgumentNullException.ThrowIfNull(httpContextAccessor.HttpContext);
 
-        string scheme = httpContextAccessor.HttpContext.Request.Scheme;
-        HostString host = httpContextAccessor.HttpContext.Request.Host;
+        (string? scheme, HostString? host) = ExtractSchemeAndHost();
 
         var collectionResponse = new CollectionResource<T>
         {
-            Items = AddLinkstoItems(linkGenerator, controller, scheme, host, items, itemActions),
-            Links = BuildLinks(linkGenerator, controller, scheme, host, listActions)
+            Items = AddLinkstoItems(linkGenerator, controller, scheme, host.Value, items, itemActions),
+            Links = BuildLinks(linkGenerator, controller, scheme, host.Value, listActions)
         };
         return collectionResponse;
     }
@@ -104,7 +118,7 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
         };
         return resource;
     }
-    
+
     private static List<Link> BuildLinks(LinkGenerator linkGenerator, string controller, string scheme, HostString host, List<ControllerAction> listActions)
     {
         return GenerateLinks.BuildLinks(
@@ -113,6 +127,12 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
                                     listActions,
                                     scheme,
                                     host);
+    }
+
+    private (string?, HostString?) ExtractSchemeAndHost()
+    {
+        var request = httpContextAccessor.HttpContext?.Request;
+        return (request?.Scheme, request?.Host);
     }
 }";
 

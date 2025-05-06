@@ -23,6 +23,11 @@ public interface IHateoasFactory
                                                         IEnumerable<T> items,
                                                         List<ControllerAction> listActions,
                                                         List<ControllerAction<T, R>> itemActions);
+
+    Resource<T> CreateResponse<T>(
+                            string controller,
+                            T item,
+                            List<ControllerAction> itemActions);
 }";
 
     internal static IncrementalGeneratorInitializationContext AddIHateoasFactoryToSource(this IncrementalGeneratorInitializationContext context)

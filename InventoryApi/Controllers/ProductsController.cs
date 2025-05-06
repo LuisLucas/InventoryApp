@@ -2,6 +2,7 @@
 using HateoasLib.Interfaces;
 using HateoasLib.Models;
 using HateoasLib.Models.ResponseModels;
+using InventoryApi.Models;
 using InventoryAPI.Application.Products;
 using InventoryAPI.Application.Products.Command.Create;
 using InventoryAPI.Application.Products.Command.Delete;
@@ -18,7 +19,8 @@ public class ProductsController(IGetProducts getProducts,
                                 ICreateProduct createProduct,
                                 IUpdateProduct updateProduct,
                                 IDeleteProduct deleteProduct,
-                                IHateoas<ProductsController, ProductDto> hateoasMeta) : ControllerBase
+                                IHateoas<ProductsController, ProductDto> hateoasMeta,
+                                IHateoas<ProductModel> hateoas) : ControllerBase
 {
     // GET: api/<ProductsController>
     [HttpGet]
@@ -61,15 +63,9 @@ public class ProductsController(IGetProducts getProducts,
             return BadRequest("Product not found");
         }
 
-        var values = new Tuple<string, Func<ProductDto, object>>("id", new Func<ProductDto, object>((product) => product.Id));
-        var itemActions = new List<ControllerAction<ProductDto, object>>()
-        {
-            new("Get", values, "self", "GET"),
-            new("Put", values, "update_product", "PUT"),
-            new("Delete", values, "delete_product", "DELETE"),
-        };
-        Resource<ProductDto> resource = hateoasMeta
-                                            .CreateResponse(product, itemActions);
+        var prodModel = new ProductModel(product.Id, product.Name, product.Description, product.Sku, product.Price, product.CreatedAt, product.CreatedBy, product.LastUpdatedAt, product.LastUpdatedBy);
+        Resource<ProductModel> resource = hateoas
+                                            .CreateResponse(prodModel, typeof(ProductsController));
 
         return Ok(resource);
     }

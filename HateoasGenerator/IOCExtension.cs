@@ -5,7 +5,15 @@ using Microsoft.CodeAnalysis.Text;
 namespace HateoasGenerator;
 internal static class IOCExtension
 {
-    internal static void AddIOCClassRegistration(Dictionary<string, string> registration, INamedTypeSymbol symbol, string dtoType, string controllerName) => registration.Add(symbol.Name, $"            services.AddScoped<IHateoas<{symbol.Name}, {dtoType}>, {controllerName}HateoasMeta>();");
+    internal static void AddIOCClassRegistration(Dictionary<string, string> registration, INamedTypeSymbol symbol, string dtoType, string controllerName)
+    {
+        registration.Add(symbol.Name, $"            services.AddScoped<IHateoas<{symbol.Name}, {dtoType}>, {controllerName}HateoasMeta>();");
+    }
+
+    internal static void AddIOCClassRegistration(Dictionary<string, string> registration, string dtoType)
+    {
+        registration.Add(dtoType, $"            services.AddScoped<IHateoas<{dtoType}>, {dtoType}HateoasMeta>();");
+    }
 
     internal static void AddIOCExtensionMethodToSource(SourceProductionContext spc, Dictionary<string, string> registration, List<string> usingsForIOC)
     {
