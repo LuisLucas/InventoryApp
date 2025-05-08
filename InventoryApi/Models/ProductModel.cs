@@ -1,10 +1,4 @@
-﻿using System.Reflection;
-using HateoasLib.Hateoas;
-using HateoasLib.Models;
-using HateoasLib.Models.ResponseModels;
-using HateoasLib.Attributes;
-using InventoryApi.Controllers;
-using InventoryAPI.Application.Products;
+﻿using HateoasLib.Attributes;
 
 namespace InventoryApi.Models;
 
