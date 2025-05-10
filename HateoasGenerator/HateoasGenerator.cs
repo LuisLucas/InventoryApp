@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
-using System.Runtime.InteropServices.ComTypes;
+using System.Reflection.Metadata;
+using System.Reflection;
 using System.Text;
 using HateoasGenerator.Attributes;
 using HateoasGenerator.Hateoas;
-using HateoasGenerator.HateoasFactory;
 using HateoasGenerator.Helpers;
 using HateoasGenerator.Interfaces;
 using HateoasGenerator.Models;
@@ -22,12 +22,14 @@ public class HateoasGenerator : IIncrementalGenerator
 
         context
             .AddAttributeToSource()
+            .AddHateoasListAttributeToSource()
             .AddHateoasAttributeToSource()
             .AddIHateoasToSource()
             .AddIHateoasOneArgToSource()
             .AddLinkToSource()
             .AddResourceToSource()
             .AddCollectionResourceToSource()
+            .AddPaginatedResourceToSource()
             .AddControllerActionToSource()
             .AddIHateoasFactoryToSource()
             .AddFactoryToSource()
@@ -47,11 +49,11 @@ public class HateoasGenerator : IIncrementalGenerator
             Compilation compilation = source.Left;
             IEnumerable<INamedTypeSymbol> classes = source.Right.Distinct();
 
-            var controllerClasses = classes.Where(x =>
+            IEnumerable<INamedTypeSymbol> controllerClasses = classes.Where(x =>
                                                     x.GetAttributes()
                                                     .Any(ad => ad.AttributeClass?.Name == EnableHateoasAttributeHelper.FileName));
 
-            var modelClasses = classes.Where(x =>
+            IEnumerable<INamedTypeSymbol> modelClasses = classes.Where(x =>
                                         x.GetAttributes()
                                         .Any(ad => ad.AttributeClass?.Name == HateoasAttribute.FileName));
 
@@ -77,7 +79,7 @@ public class HateoasGenerator : IIncrementalGenerator
 
             foreach (INamedTypeSymbol symbol in modelClasses)
             {
-                var actionsAttributes = ExtractAttributesFromType(symbol);
+                List<ImmutableArray<TypedConstant>> actionsAttributes = ExtractAttributesFromType(symbol);
                 if (actionsAttributes == null || !actionsAttributes.Any())
                 {
                     continue;
@@ -99,6 +101,8 @@ public class HateoasGenerator : IIncrementalGenerator
 
     private void AddModelHateoasClassToSource(SourceProductionContext spc, List<ImmutableArray<TypedConstant>> actionsAttributes, string typeName, string typeNamespace)
     {
+        List<string> actonList = GetActionsFromAttributes(actionsAttributes);
+
         var sb = new StringBuilder();
         sb.AppendLine("using HateoasLib.Interfaces;");
         sb.AppendLine("using HateoasLib.Models;");
@@ -112,12 +116,10 @@ public class HateoasGenerator : IIncrementalGenerator
         sb.AppendLine($"    public Resource<{typeName}> CreateResponse({typeName} item, Type controller)");
         sb.AppendLine("     {");
         sb.AppendLine("         var itemActions = new List<ControllerAction>();");
-        foreach (ImmutableArray<TypedConstant> action in actionsAttributes)
+
+        foreach (string controllerAction in actonList)
         {
-            var method = action[0].Value as string;
-            var rel = action[1].Value as string;
-            var property = action[2].Value as string;
-            sb.AppendLine($"        itemActions.Add(new ControllerAction(\"{method}\", new {{ {property.ToLowerInvariant()} = item.{property} }}, \"{rel}\", \"{method}\"));");
+            sb.AppendLine($"        itemActions.Add({controllerAction});");
         }
 
         sb.AppendLine($"        Resource <{typeName}> response = hateoas.CreateResponse<{typeName}>(");
@@ -126,18 +128,57 @@ public class HateoasGenerator : IIncrementalGenerator
         sb.AppendLine("                                                                 itemActions);");
         sb.AppendLine("         return response;");
         sb.AppendLine("     }");
+        sb.AppendLine("");
+        sb.AppendLine($"    public PaginatedResource<{typeName}> CreatePaginatedResponse(IEnumerable<{typeName}> items, Type controller, int page, int pageSize, int totalNumberOfRecords)");
+        sb.AppendLine("     {");
+        sb.AppendLine($"         var itemActions = new List<ControllerAction<{typeName}, object>>();");
+
+        var idx = 0;
+        foreach (ImmutableArray<TypedConstant> action in actionsAttributes)
+        {
+            string method = action[0].Value as string;
+            string rel = action[1].Value as string;
+            string property = action[2].Value as string;
+            sb.AppendLine($"        var value{idx} = new Tuple<string, Func<{typeName}, object>>(\"{property.ToLowerInvariant()}\", new Func<{typeName}, object>((item) => item.{property}));");
+            sb.AppendLine($"        itemActions.Add(new ControllerAction<{typeName}, object>(\"{method}\", value{idx}, \"{rel}\", \"{method}\"));");
+            idx++;
+        }
+
+        sb.AppendLine("         var listActions = new List<ControllerAction>();");
+        sb.AppendLine($"        listActions.Add(new ControllerAction(\"Get\", new {{ page }}, \"self\", \"Get\"));");
+        sb.AppendLine($"        listActions.Add(new ControllerAction(\"Get\", new {{ page }}, \"first\", \"first\"));");
+        sb.AppendLine($"        listActions.Add(new ControllerAction(\"Get\", new {{ page = page + 1 }}, \"next\", \"next\"));");
+        sb.AppendLine($"        listActions.Add(new ControllerAction(\"Get\", new {{ page = (int)Math.Ceiling((double)totalNumberOfRecords / pageSize)}}, \"last\", \"last\"));");
+        sb.AppendLine("");
+        sb.AppendLine("         var result = hateoas.CreateCollectionResponse<ProductModel, object>(controller.Name.Replace(\"Controller\", \"\"), items, listActions, itemActions);");
+        sb.AppendLine("         return new HateoasLib.Models.ResponseModels.PaginatedResource<ProductModel>(){Items = result.Items, Links = result.Links, Page = page, PageSize = pageSize, TotalItems = totalNumberOfRecords};");
+        sb.AppendLine("     }");
+        sb.AppendLine("");
         sb.AppendLine("  }");
         sb.AppendLine("}");
 
         spc.AddSource($"{typeName}_Hateoas.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
     }
 
+    private static List<string> GetActionsFromAttributes(List<ImmutableArray<TypedConstant>> actionsAttributes)
+    {
+        List<string> sb = [];
+        foreach (ImmutableArray<TypedConstant> action in actionsAttributes)
+        {
+            string method = action[0].Value as string;
+            string rel = action[1].Value as string;
+            string property = action[2].Value as string;
+            sb.Add($"new ControllerAction(\"{method}\", new {{ {property.ToLowerInvariant()} = item.{property} }}, \"{rel}\", \"{method}\")");
+        }
+        return sb;
+    }
+
     public static List<ImmutableArray<TypedConstant>> ExtractAttributesFromType(INamedTypeSymbol typeSymbol)
     {
         var actions = new List<ImmutableArray<TypedConstant>>();
-        foreach (var attributeData in typeSymbol.GetAttributes())
+        foreach (AttributeData attributeData in typeSymbol.GetAttributes())
         {
-            var attrClassName = attributeData.AttributeClass?.Name;
+            string attrClassName = attributeData.AttributeClass?.Name;
 
             if (attrClassName is null || !attrClassName.StartsWith("Hateoas"))
             {
@@ -145,12 +186,6 @@ public class HateoasGenerator : IIncrementalGenerator
             }
 
             actions.Add(attributeData.ConstructorArguments);
-
-            /*// Named arguments (e.g., [Attr(SomeProperty = "abc")])
-            foreach (var namedArg in attributeData.NamedArguments)
-            {
-                Console.WriteLine($"Named Arg: {namedArg.Key} = {namedArg.Value.Value}");
-            }*/
         }
         return actions;
     }
@@ -221,25 +256,27 @@ public class HateoasGenerator : IIncrementalGenerator
 
     private static INamedTypeSymbol GetSemanticTarget(GeneratorSyntaxContext context)
     {
-        if(context.Node is ClassDeclarationSyntax)
+        if (context.Node is ClassDeclarationSyntax)
         {
             var classSyntax = (ClassDeclarationSyntax)context.Node;
-            var symbol = context.SemanticModel.GetDeclaredSymbol(classSyntax) as INamedTypeSymbol;
-            if (symbol == null) return null;
-
-            var hasHateoasAttr = symbol.GetAttributes()
+            if (context.SemanticModel.GetDeclaredSymbol(classSyntax) is not INamedTypeSymbol symbol)
+            {
+                return null;
+            }
+            bool hasHateoasAttr = symbol.GetAttributes()
                 .Any(attr => attr.AttributeClass?.Name.Contains("EnableHateoas") == true
                                || attr.AttributeClass?.Name.Contains("Hateoas") == true);
 
             return hasHateoasAttr ? symbol : null;
         }
-        else if(context.Node is RecordDeclarationSyntax)
+        else if (context.Node is RecordDeclarationSyntax classSyntax)
         {
-            var classSyntax = (RecordDeclarationSyntax)context.Node;
-            var symbol = context.SemanticModel.GetDeclaredSymbol(classSyntax) as INamedTypeSymbol;
-            if (symbol == null) return null;
+            if (context.SemanticModel.GetDeclaredSymbol(classSyntax) is not INamedTypeSymbol symbol)
+            {
+                return null;
+            }
 
-            var hasHateoasAttr = symbol.GetAttributes()
+            bool hasHateoasAttr = symbol.GetAttributes()
                 .Any(attr => attr.AttributeClass?.Name.Contains("Hateoas") == true
                                || attr.AttributeClass?.Name.Contains("Hateoas") == true);
 

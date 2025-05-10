@@ -20,7 +20,8 @@ public class ProductsController(IGetProducts getProducts,
                                 IUpdateProduct updateProduct,
                                 IDeleteProduct deleteProduct,
                                 IHateoas<ProductsController, ProductDto> hateoasMeta,
-                                IHateoas<ProductModel> hateoas) : ControllerBase
+                                IHateoas<ProductModel> hateoas,
+                                IHateoasFactory hateoasFactory) : ControllerBase
 {
     // GET: api/<ProductsController>
     [HttpGet]
@@ -43,8 +44,11 @@ public class ProductsController(IGetProducts getProducts,
 
         CollectionResource<ProductDto> collectionResource = hateoasMeta
                                                                 .CreateCollectionResponse(products, listActions, itemActions);
-
-
+        
+        /*var test = new ProductTestModelHateoasMeta(hateoasFactory).CreatePaginatedResponse(
+                products.Select(product =>
+                            new ProductModel(product.Id, product.Name, product.Description, product.Sku, product.Price, product.CreatedAt, product.CreatedBy, product.LastUpdatedAt, product.LastUpdatedBy)), typeof(ProductsController));
+        */
         return Ok(collectionResource);
     }
 

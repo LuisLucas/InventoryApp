@@ -1,7 +1,7 @@
 ﻿using HateoasGenerator.Helpers;
 using Microsoft.CodeAnalysis;
 
-namespace HateoasGenerator.HateoasFactory;
+namespace HateoasGenerator.Hateoas;
 internal static class HateoasFactory
 {
     private const string FileName = "HateoasFactory";

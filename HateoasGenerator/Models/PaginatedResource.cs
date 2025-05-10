@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 namespace HateoasGenerator.Models;
 internal static class PaginatedResource
 {
-    private const string FileName = "CollectionResource";
+    private const string FileName = "PaginatedResource";
     public const string Class = @"
 namespace HateoasLib.Models.ResponseModels;
 
