@@ -28,6 +28,12 @@ public interface IHateoasFactory
                             string controller,
                             T item,
                             List<ControllerAction> itemActions);
+
+    PaginatedResource<T> CreatePaginatedResponse<T>(
+                                                    string controller,
+                                                    IEnumerable<T> items,
+                                                    List<ControllerAction> listActions,
+                                                    List<ControllerAction<T, object>> itemActions);
 }";
 
     internal static IncrementalGeneratorInitializationContext AddIHateoasFactoryToSource(this IncrementalGeneratorInitializationContext context)

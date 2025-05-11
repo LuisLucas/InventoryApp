@@ -77,6 +77,23 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
         return collectionResponse;
     }
 
+    public PaginatedResource<T> CreatePaginatedResponse<T>(string controller,
+        IEnumerable<T> items,
+        List<ControllerAction> listActions,
+        List<ControllerAction<T, object>> itemActions)
+    {
+        ArgumentNullException.ThrowIfNull(httpContextAccessor.HttpContext);
+
+        (string? scheme, HostString? host) = ExtractSchemeAndHost();
+
+        var paginatedResponse = new PaginatedResource<T>
+        {
+            Items = AddLinkstoItems(linkGenerator, controller, scheme, host.Value, items, itemActions),
+            Links = BuildLinks(linkGenerator, controller, scheme, host.Value, listActions)
+        };
+        return paginatedResponse;
+    }
+
     private static List<Resource<T>> AddLinkstoItems<T, R>(
         LinkGenerator linkGenerator,
         string controller,

@@ -1,6 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Reflection.Metadata;
-using System.Reflection;
 using System.Text;
 using HateoasGenerator.Attributes;
 using HateoasGenerator.Hateoas;
@@ -79,7 +77,7 @@ public class HateoasGenerator : IIncrementalGenerator
 
             foreach (INamedTypeSymbol symbol in modelClasses)
             {
-                List<ImmutableArray<TypedConstant>> actionsAttributes = ExtractAttributesFromType(symbol);
+                Dictionary<string, List<ImmutableArray<TypedConstant>>> actionsAttributes = ExtractAttributesFromType(symbol);
                 if (actionsAttributes == null || !actionsAttributes.Any())
                 {
                     continue;
@@ -99,9 +97,9 @@ public class HateoasGenerator : IIncrementalGenerator
         });
     }
 
-    private void AddModelHateoasClassToSource(SourceProductionContext spc, List<ImmutableArray<TypedConstant>> actionsAttributes, string typeName, string typeNamespace)
+    private void AddModelHateoasClassToSource(SourceProductionContext spc, Dictionary<string, List<ImmutableArray<TypedConstant>>> actionsAttributes, string typeName, string typeNamespace)
     {
-        List<string> actonList = GetActionsFromAttributes(actionsAttributes);
+        List<string> actonList = GetActionsFromAttributes(actionsAttributes["HateoasAttribute"]);
 
         var sb = new StringBuilder();
         sb.AppendLine("using HateoasLib.Interfaces;");
@@ -133,8 +131,8 @@ public class HateoasGenerator : IIncrementalGenerator
         sb.AppendLine("     {");
         sb.AppendLine($"         var itemActions = new List<ControllerAction<{typeName}, object>>();");
 
-        var idx = 0;
-        foreach (ImmutableArray<TypedConstant> action in actionsAttributes)
+        int idx = 0;
+        foreach (ImmutableArray<TypedConstant> action in actionsAttributes["HateoasAttribute"])
         {
             string method = action[0].Value as string;
             string rel = action[1].Value as string;
@@ -145,13 +143,28 @@ public class HateoasGenerator : IIncrementalGenerator
         }
 
         sb.AppendLine("         var listActions = new List<ControllerAction>();");
-        sb.AppendLine($"        listActions.Add(new ControllerAction(\"Get\", new {{ page }}, \"self\", \"Get\"));");
-        sb.AppendLine($"        listActions.Add(new ControllerAction(\"Get\", new {{ page }}, \"first\", \"first\"));");
-        sb.AppendLine($"        listActions.Add(new ControllerAction(\"Get\", new {{ page = page + 1 }}, \"next\", \"next\"));");
-        sb.AppendLine($"        listActions.Add(new ControllerAction(\"Get\", new {{ page = (int)Math.Ceiling((double)totalNumberOfRecords / pageSize)}}, \"last\", \"last\"));");
+
+        foreach (ImmutableArray<TypedConstant> action in actionsAttributes["HateoasListAttribute"])
+        {
+            string method = action[0].Value as string;
+            string rel = action[1].Value as string;
+            if(rel == "self")
+            {
+                sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page }}, \"{rel}\", \"{method}\"));");
+                sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page = 1 }}, \"first\", \"first\"));");
+                sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page = page + 1 }}, \"next\", \"next\"));");
+                sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page = (int)Math.Ceiling((double)totalNumberOfRecords / pageSize)}}, \"last\", \"last\"));");
+            }
+            else
+            {
+                sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ }}, \"{rel}\", \"{method}\"));");
+            }
+        }
+
         sb.AppendLine("");
-        sb.AppendLine("         var result = hateoas.CreateCollectionResponse<ProductModel, object>(controller.Name.Replace(\"Controller\", \"\"), items, listActions, itemActions);");
-        sb.AppendLine("         return new HateoasLib.Models.ResponseModels.PaginatedResource<ProductModel>(){Items = result.Items, Links = result.Links, Page = page, PageSize = pageSize, TotalItems = totalNumberOfRecords};");
+        sb.AppendLine("         var result = hateoas.CreatePaginatedResponse<ProductModel>(controller.Name.Replace(\"Controller\", \"\"), items, listActions, itemActions);");
+        sb.AppendLine("         result.Page = page; result.PageSize = pageSize; result.TotalItems = totalNumberOfRecords;");
+        sb.AppendLine("         return result;");
         sb.AppendLine("     }");
         sb.AppendLine("");
         sb.AppendLine("  }");
@@ -173,9 +186,13 @@ public class HateoasGenerator : IIncrementalGenerator
         return sb;
     }
 
-    public static List<ImmutableArray<TypedConstant>> ExtractAttributesFromType(INamedTypeSymbol typeSymbol)
+    public static Dictionary<string, List<ImmutableArray<TypedConstant>>> ExtractAttributesFromType(INamedTypeSymbol typeSymbol)
     {
-        var actions = new List<ImmutableArray<TypedConstant>>();
+        var actions = new Dictionary<string, List<ImmutableArray<TypedConstant>>>()
+        {
+            { "HateoasAttribute", new List<ImmutableArray<TypedConstant>>() },
+            { "HateoasListAttribute", new List<ImmutableArray<TypedConstant>>() }
+        };
         foreach (AttributeData attributeData in typeSymbol.GetAttributes())
         {
             string attrClassName = attributeData.AttributeClass?.Name;
@@ -185,7 +202,10 @@ public class HateoasGenerator : IIncrementalGenerator
                 continue;
             }
 
-            actions.Add(attributeData.ConstructorArguments);
+            if (actions.ContainsKey(attrClassName))
+            {
+                actions[attrClassName].Add(attributeData.ConstructorArguments);
+            }
         }
         return actions;
     }

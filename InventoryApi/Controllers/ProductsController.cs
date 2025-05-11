@@ -20,8 +20,7 @@ public class ProductsController(IGetProducts getProducts,
                                 IUpdateProduct updateProduct,
                                 IDeleteProduct deleteProduct,
                                 IHateoas<ProductsController, ProductDto> hateoasMeta,
-                                IHateoas<ProductModel> hateoas,
-                                IHateoasFactory hateoasFactory) : ControllerBase
+                                IHateoas<ProductModel> hateoas) : ControllerBase
 {
     // GET: api/<ProductsController>
     [HttpGet]
@@ -29,7 +28,7 @@ public class ProductsController(IGetProducts getProducts,
     {
         IEnumerable<ProductDto> products = await getProducts.Handle();
 
-        var values = new Tuple<string, Func<ProductDto, object>>("id", new Func<ProductDto, object>((product) => product.Id));
+        /*var values = new Tuple<string, Func<ProductDto, object>>("id", new Func<ProductDto, object>((product) => product.Id));
         var itemActions = new List<ControllerAction<ProductDto, object>>()
         {
             new("Get", values, "self", "GET"),
@@ -44,12 +43,12 @@ public class ProductsController(IGetProducts getProducts,
 
         CollectionResource<ProductDto> collectionResource = hateoasMeta
                                                                 .CreateCollectionResponse(products, listActions, itemActions);
-        
-        /*var test = new ProductTestModelHateoasMeta(hateoasFactory).CreatePaginatedResponse(
-                products.Select(product =>
-                            new ProductModel(product.Id, product.Name, product.Description, product.Sku, product.Price, product.CreatedAt, product.CreatedBy, product.LastUpdatedAt, product.LastUpdatedBy)), typeof(ProductsController));
         */
-        return Ok(collectionResource);
+        PaginatedResource<ProductModel> paginated = hateoas.CreatePaginatedResponse(
+                products.Select(product =>
+                            new ProductModel(product.Id, product.Name, product.Description, product.Sku, product.Price, product.CreatedAt, product.CreatedBy, product.LastUpdatedAt, product.LastUpdatedBy)), typeof(ProductsController), 1, 10, 30);
+        
+        return Ok(paginated);
     }
 
     // GET api/<ProductsController>/5

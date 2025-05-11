@@ -14,6 +14,8 @@ namespace HateoasLib.Interfaces;
 public interface IHateoas<T>
 {
     Resource<T> CreateResponse(T item, Type controller);
+
+    PaginatedResource<T> CreatePaginatedResponse(IEnumerable<T> items, Type controller, int page, int pageSize, int totalNumberOfRecords);
 }";
 
     internal static IncrementalGeneratorInitializationContext AddIHateoasOneArgToSource(this IncrementalGeneratorInitializationContext context)

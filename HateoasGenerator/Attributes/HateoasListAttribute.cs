@@ -13,13 +13,11 @@ public class HateoasListAttribute : Attribute
 {
     public string Method { get; }
     public string Relation { get; }
-    public string Property { get; }
 
-    public HateoasListAttribute(string method, string relation, string property)
+    public HateoasListAttribute(string method, string relation)
     {
         Method = method;
         Relation = relation;
-        Property = property;
     }
 }";
 
