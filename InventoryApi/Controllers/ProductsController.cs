@@ -1,6 +1,5 @@
 ﻿using HateoasLib.Attributes;
 using HateoasLib.Interfaces;
-using HateoasLib.Models;
 using HateoasLib.Models.ResponseModels;
 using InventoryApi.Models;
 using InventoryAPI.Application.Products;
@@ -28,14 +27,14 @@ public class ProductsController(IGetProducts getProducts,
     {
         IEnumerable<ProductDto> products = await getProducts.Handle();
 
-        /*var values = new Tuple<string, Func<ProductDto, object>>("id", new Func<ProductDto, object>((product) => product.Id));
-        var itemActions = new List<ControllerAction<ProductDto, object>>()
+        var values = new Tuple<string, Func<ProductDto, object>>("id", new Func<ProductDto, object>((product) => product.Id));
+        var itemActions = new List<HateoasLib.Models.ControllerAction<ProductDto, object>>()
         {
             new("Get", values, "self", "GET"),
             new("Put", values, "update_product", "PUT"),
             new("Delete", values, "delete_product", "DELETE"),
         };
-        var listActions = new List<ControllerAction>()
+        var listActions = new List<HateoasLib.Models.ControllerAction>()
         {
             new("Get", new { }, "self", "GET"),
             new("Post", new { }, "create_product", "POST"),
@@ -43,12 +42,17 @@ public class ProductsController(IGetProducts getProducts,
 
         CollectionResource<ProductDto> collectionResource = hateoasMeta
                                                                 .CreateCollectionResponse(products, listActions, itemActions);
-        */
+        
         PaginatedResource<ProductModel> paginated = hateoas.CreatePaginatedResponse(
                 products.Select(product =>
                             new ProductModel(product.Id, product.Name, product.Description, product.Sku, product.Price, product.CreatedAt, product.CreatedBy, product.LastUpdatedAt, product.LastUpdatedBy)), typeof(ProductsController), 1, 10, 30);
-        
-        return Ok(paginated);
+
+        var producModelList = products.Select(product =>
+                            new ProductModel(product.Id, product.Name, product.Description, product.Sku, product.Price, product.CreatedAt, product.CreatedBy, product.LastUpdatedAt, product.LastUpdatedBy));
+        CollectionResource<ProductModel> collectionResource2 = hateoas
+                            .CreateCollectionResponse(producModelList, typeof(ProductsController));
+
+        return Ok(collectionResource2);
     }
 
     // GET api/<ProductsController>/5

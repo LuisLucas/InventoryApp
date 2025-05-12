@@ -15,6 +15,8 @@ public interface IHateoas<T>
 {
     Resource<T> CreateResponse(T item, Type controller);
 
+    CollectionResource<T> CreateCollectionResponse(IEnumerable<T> items, Type controller);
+
     PaginatedResource<T> CreatePaginatedResponse(IEnumerable<T> items, Type controller, int page, int pageSize, int totalNumberOfRecords);
 }";
 

@@ -47,9 +47,7 @@ public class HateoasGenerator : IIncrementalGenerator
             Compilation compilation = source.Left;
             IEnumerable<INamedTypeSymbol> classes = source.Right.Distinct();
 
-            IEnumerable<INamedTypeSymbol> controllerClasses = classes.Where(x =>
-                                                    x.GetAttributes()
-                                                    .Any(ad => ad.AttributeClass?.Name == EnableHateoasAttributeHelper.FileName));
+            IEnumerable<INamedTypeSymbol> controllerClasses = HateoasControllerClassGenerator.Get(classes);
 
             IEnumerable<INamedTypeSymbol> modelClasses = classes.Where(x =>
                                         x.GetAttributes()
@@ -57,23 +55,7 @@ public class HateoasGenerator : IIncrementalGenerator
 
             var registration = new Dictionary<string, string>();
             var usingsForIOC = new List<string>();
-            foreach (INamedTypeSymbol symbol in controllerClasses)
-            {
-                (string dtoName, string dtoNamespace) = GetTypeFromAttribute(symbol);
-                if (string.IsNullOrEmpty(dtoName) || string.IsNullOrEmpty(dtoNamespace))
-                {
-                    continue;
-                }
-
-                string controllerNamespace = symbol.GetFullNamespace();
-                string controllerName = symbol.Name.Replace("Controller", "");
-
-                AddControllerHateoasClassToSource(spc, symbol, dtoName, dtoNamespace, controllerName, controllerNamespace);
-                IOCExtension.AddIOCClassRegistration(registration, symbol, dtoName, controllerName);
-
-                usingsForIOC.Add(dtoNamespace);
-                usingsForIOC.Add(controllerNamespace);
-            }
+            HateoasControllerClassGenerator.GenerateHateoasControllerClass(spc, classes, registration, usingsForIOC);
 
             foreach (INamedTypeSymbol symbol in modelClasses)
             {
@@ -127,11 +109,45 @@ public class HateoasGenerator : IIncrementalGenerator
         sb.AppendLine("         return response;");
         sb.AppendLine("     }");
         sb.AppendLine("");
-        sb.AppendLine($"    public PaginatedResource<{typeName}> CreatePaginatedResponse(IEnumerable<{typeName}> items, Type controller, int page, int pageSize, int totalNumberOfRecords)");
+        sb.AppendLine($"    public CollectionResource<{typeName}> CreateCollectionResponse(IEnumerable<{typeName}> items, Type controller)");
         sb.AppendLine("     {");
         sb.AppendLine($"         var itemActions = new List<ControllerAction<{typeName}, object>>();");
 
         int idx = 0;
+        foreach (ImmutableArray<TypedConstant> action in actionsAttributes["HateoasAttribute"])
+        {
+            string method = action[0].Value as string;
+            string rel = action[1].Value as string;
+            string property = action[2].Value as string;
+            sb.AppendLine($"        var value{idx} = new Tuple<string, Func<{typeName}, object>>(\"{property.ToLowerInvariant()}\", new Func<{typeName}, object>((item) => item.{property}));");
+            sb.AppendLine($"        itemActions.Add(new ControllerAction<{typeName}, object>(\"{method}\", value{idx}, \"{rel}\", \"{method}\"));");
+            idx++;
+        }
+
+        sb.AppendLine("         var listActions = new List<ControllerAction>();");
+
+        foreach (ImmutableArray<TypedConstant> action in actionsAttributes["HateoasListAttribute"])
+        {
+            string method = action[0].Value as string;
+            string rel = action[1].Value as string;
+                sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ }}, \"{rel}\", \"{method}\"));");
+        }
+
+        sb.AppendLine("");
+        sb.AppendLine($"        CollectionResource<{typeName}> collectionResponse = hateoas.CreateCollectionResponse<{typeName}, object>(");
+        sb.AppendLine("                                                                 controller.Name.Replace(\"Controller\", \"\"),");
+        sb.AppendLine("                                                                 items,");
+        sb.AppendLine("                                                                 listActions,");
+        sb.AppendLine("                                                                 itemActions);");
+
+        sb.AppendLine("         return collectionResponse;");
+        sb.AppendLine("     }");
+        sb.AppendLine("");
+        sb.AppendLine($"    public PaginatedResource<{typeName}> CreatePaginatedResponse(IEnumerable<{typeName}> items, Type controller, int page, int pageSize, int totalNumberOfRecords)");
+        sb.AppendLine("     {");
+        sb.AppendLine($"         var itemActions = new List<ControllerAction<{typeName}, object>>();");
+
+        idx = 0;
         foreach (ImmutableArray<TypedConstant> action in actionsAttributes["HateoasAttribute"])
         {
             string method = action[0].Value as string;
@@ -208,67 +224,6 @@ public class HateoasGenerator : IIncrementalGenerator
             }
         }
         return actions;
-    }
-
-
-    private static void AddControllerHateoasClassToSource(
-        SourceProductionContext spc,
-        INamedTypeSymbol symbol,
-        string dtoName,
-        string dtoNamespace,
-        string controllerName,
-        string controllerNamespace)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine("using HateoasLib.Interfaces;");
-        sb.AppendLine("using HateoasLib.Models;");
-        sb.AppendLine("using HateoasLib.Models.ResponseModels;");
-        sb.AppendLine($"using {controllerNamespace};");
-        sb.AppendLine($"using {dtoNamespace};");
-        sb.AppendLine("namespace GeneratedHateoas");
-        sb.AppendLine("{");
-        sb.AppendLine($"  public class {controllerName}HateoasMeta(IHateoasFactory hateoas) : IHateoas<{symbol.Name},{dtoName}>");
-        sb.AppendLine("   {");
-        sb.AppendLine($"    private readonly string _constructorName = \"{controllerName}\";");
-        sb.AppendLine("");
-        sb.AppendLine($"    public CollectionResource<{dtoName}> CreateCollectionResponse(IEnumerable<{dtoName}> items, List<ControllerAction> listActions, List<ControllerAction<{dtoName}, object>> itemActions)");
-        sb.AppendLine("     {");
-        sb.AppendLine($"        CollectionResource <{dtoName}> collectionResponse = hateoas.CreateCollectionResponse<{dtoName}, object>(");
-        sb.AppendLine("                                                                 _constructorName,");
-        sb.AppendLine("                                                                 items,");
-        sb.AppendLine("                                                                 listActions,");
-        sb.AppendLine("                                                                 itemActions);");
-        sb.AppendLine("         return collectionResponse;");
-        sb.AppendLine("     }");
-        sb.AppendLine("");
-        sb.AppendLine($"    public Resource<{dtoName}> CreateResponse({dtoName} item, List<ControllerAction<{dtoName}, object>> itemActions)");
-        sb.AppendLine("     {");
-        sb.AppendLine($"        Resource <{dtoName}> response = hateoas.CreateResponse<{dtoName}, object>(");
-        sb.AppendLine("                                                                 _constructorName,");
-        sb.AppendLine("                                                                 item,");
-        sb.AppendLine("                                                                 itemActions);");
-        sb.AppendLine("         return response;");
-        sb.AppendLine("     }");
-        sb.AppendLine("  }");
-        sb.AppendLine("}");
-
-        spc.AddSource($"{controllerName}_Hateoas.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
-    }
-
-    private static (string, string) GetTypeFromAttribute(INamedTypeSymbol symbol)
-    {
-        AttributeData attr = symbol
-            .GetAttributes()
-            .FirstOrDefault(ad => ad.AttributeClass?.Name == EnableHateoasAttributeHelper.FileName);
-
-        if (attr == null || attr.ConstructorArguments.Length != 1)
-        {
-            return (string.Empty, string.Empty);
-
-        }
-
-        var typeArg = attr.ConstructorArguments[0].Value as ITypeSymbol;
-        return (typeArg.Name, typeArg.ContainingNamespace.ToDisplayString());
     }
 
     private static bool IsCandidateClass(SyntaxNode node) =>
