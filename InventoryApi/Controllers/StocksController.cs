@@ -7,10 +7,10 @@ namespace InventoryApi.Controllers;
 
 public class StocksController(IGetStock getStock, IUpdateStock createProductStock) : ControllerBase
 {
-    [HttpGet("product/{productId}/stock")]
-    public async Task<ActionResult> Get(int productId)
+    [HttpGet("product/{id}/stock")]
+    public async Task<ActionResult> Get(int id)
     {
-        ProductStockDto productStock = await getStock.Handle(productId);
+        ProductStockDto productStock = await getStock.Handle(id);
         return Ok(productStock);
     }
 

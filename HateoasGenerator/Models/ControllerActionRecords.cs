@@ -8,9 +8,9 @@ internal static class ControllerActionRecords
     public const string Class = @"
 namespace HateoasLib.Models;
 
-public record ControllerAction(string action, object? values, string rel, string method);
+public record ControllerAction(string action, object? values, string rel, string method, string controller = """");
 
-public record ControllerAction<T, R>(string action, Tuple<string, Func<T, R>> values, string rel, string method);";
+public record ControllerAction<T, R>(string action, Tuple<string, Func<T, R>> values, string rel, string method, string controller = """");";
 
     internal static IncrementalGeneratorInitializationContext AddControllerActionToSource(this IncrementalGeneratorInitializationContext context)
     {

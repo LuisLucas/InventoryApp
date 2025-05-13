@@ -119,8 +119,9 @@ public class HateoasGenerator : IIncrementalGenerator
             string method = action[0].Value as string;
             string rel = action[1].Value as string;
             string property = action[2].Value as string;
+            string controller = action[3].Value as string;
             sb.AppendLine($"        var value{idx} = new Tuple<string, Func<{typeName}, object>>(\"{property.ToLowerInvariant()}\", new Func<{typeName}, object>((item) => item.{property}));");
-            sb.AppendLine($"        itemActions.Add(new ControllerAction<{typeName}, object>(\"{method}\", value{idx}, \"{rel}\", \"{method}\"));");
+            sb.AppendLine($"        itemActions.Add(new ControllerAction<{typeName}, object>(\"{method}\", value{idx}, \"{rel}\", \"{method}\", \"{controller}\"));");
             idx++;
         }
 
@@ -153,8 +154,9 @@ public class HateoasGenerator : IIncrementalGenerator
             string method = action[0].Value as string;
             string rel = action[1].Value as string;
             string property = action[2].Value as string;
+            string controller = action[3].Value as string;
             sb.AppendLine($"        var value{idx} = new Tuple<string, Func<{typeName}, object>>(\"{property.ToLowerInvariant()}\", new Func<{typeName}, object>((item) => item.{property}));");
-            sb.AppendLine($"        itemActions.Add(new ControllerAction<{typeName}, object>(\"{method}\", value{idx}, \"{rel}\", \"{method}\"));");
+            sb.AppendLine($"        itemActions.Add(new ControllerAction<{typeName}, object>(\"{method}\", value{idx}, \"{rel}\", \"{method}\", \"{controller}\"));");
             idx++;
         }
 
@@ -197,7 +199,8 @@ public class HateoasGenerator : IIncrementalGenerator
             string method = action[0].Value as string;
             string rel = action[1].Value as string;
             string property = action[2].Value as string;
-            sb.Add($"new ControllerAction(\"{method}\", new {{ {property.ToLowerInvariant()} = item.{property} }}, \"{rel}\", \"{method}\")");
+            string controller = action[3].Value as string;
+            sb.Add($"new ControllerAction(\"{method}\", new {{ {property.ToLowerInvariant()} = item.{property} }}, \"{rel}\", \"{method}\", \"{controller}\")");
         }
         return sb;
     }

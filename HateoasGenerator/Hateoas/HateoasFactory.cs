@@ -32,7 +32,7 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
             {
                 { c.values.Item1, c.values.Item2.Invoke(item) }
             };
-            itemControllerActions.Add(new ControllerAction(c.action, routeValueDic, c.rel, c.method));
+            itemControllerActions.Add(new ControllerAction(c.action, routeValueDic, c.rel, c.method, c.controller));
         }
 
         var resource = new Resource<T>
@@ -125,7 +125,7 @@ public class HateoasFactory(LinkGenerator linkGenerator, IHttpContextAccessor ht
             {
                 { c.values.Item1, c.values.Item2.Invoke(item) }
             };
-            itemControllerActions.Add(new ControllerAction(c.action, routeValueDic, c.rel, c.method));
+            itemControllerActions.Add(new ControllerAction(c.action, routeValueDic, c.rel, c.method, c.controller));
         }
 
         var resource = new Resource<T>

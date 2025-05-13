@@ -14,12 +14,14 @@ public class HateoasAttribute : Attribute
     public string Method { get; }
     public string Relation { get; }
     public string Property { get; }
+    public string Controller { get; }
 
-    public HateoasAttribute(string method, string relation, string property)
+    public HateoasAttribute(string method, string relation, string property, string controller = """")
     {
         Method = method;
         Relation = relation;
         Property = property;
+        Controller = controller;
     }
 }";
 

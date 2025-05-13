@@ -18,9 +18,14 @@ public static class GenerateLinks
         var links = new List<Link>();
         foreach (ControllerAction item in actions)
         {
+            string controllerName = controller;
+            if(!String.IsNullOrEmpty(item.controller))
+            {
+                controllerName = item.controller.Replace(""Controller"", """");
+            }
             string? absoluteUri = linkGenerator.GetUriByAction(
                                                 action: item.action,
-                                                controller: controller,
+                                                controller: controllerName,
                                                 values: item.values,
                                                 scheme,
                                                 host);
