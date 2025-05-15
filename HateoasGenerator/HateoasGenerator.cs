@@ -81,7 +81,7 @@ public class HateoasGenerator : IIncrementalGenerator
 
     private void AddModelHateoasClassToSource(SourceProductionContext spc, Dictionary<string, List<ImmutableArray<TypedConstant>>> actionsAttributes, string typeName, string typeNamespace)
     {
-        List<string> actonList = GetActionsFromAttributes(actionsAttributes["HateoasAttribute"]);
+        List<string> actionList = GetActionsFromAttributes(actionsAttributes["HateoasAttribute"]);
 
         var sb = new StringBuilder();
         sb.AppendLine("using HateoasLib.Interfaces;");
@@ -97,9 +97,21 @@ public class HateoasGenerator : IIncrementalGenerator
         sb.AppendLine("     {");
         sb.AppendLine("         var itemActions = new List<ControllerAction>();");
 
-        foreach (string controllerAction in actonList)
+        foreach (string controllerAction in actionList)
         {
             sb.AppendLine($"        itemActions.Add({controllerAction});");
+        }
+
+        foreach (ImmutableArray<TypedConstant> action in actionsAttributes["HateoasListAttribute"])
+        {
+            string method = action[0].Value as string;
+            string rel = action[1].Value as string;
+            if(method == "GET" &&  rel == "self")
+            {
+                sb.AppendLine($"        itemActions.Add(new ControllerAction(\"{method}\", new {{ }}, \"collection\", \"{method}\"));");
+
+            }
+
         }
 
         sb.AppendLine($"        Resource <{typeName}> response = hateoas.CreateResponse<{typeName}>(");
@@ -170,6 +182,7 @@ public class HateoasGenerator : IIncrementalGenerator
             {
                 sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page }}, \"{rel}\", \"{method}\"));");
                 sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page = 1 }}, \"first\", \"first\"));");
+                sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page = page - 1 }}, \"previous\", \"previous\"));");
                 sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page = page + 1 }}, \"next\", \"next\"));");
                 sb.AppendLine($"        listActions.Add(new ControllerAction(\"{method}\", new {{ page = (int)Math.Ceiling((double)totalNumberOfRecords / pageSize)}}, \"last\", \"last\"));");
             }
